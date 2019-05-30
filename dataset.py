@@ -1,24 +1,23 @@
-
-
-
 #############
 #  DATASET  #
 #############
 
+import csv
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.preprocessing import PolynomialFeatures
-import csv
-
+from sklearn.impute import SimpleImputer
 
 class DataSet:
     def __init__(self, train_f, test_f):
         """
             Initialize dataset from file(s)
         """
+        self.train_var, self.train_output = None, None
+        self.test_var, self.test_output = None, None
+
         self.read_train_test(train_f, test_f)
-        print("hola")
 
     def read_train_test(self, train_f, test_f):
         """
@@ -50,36 +49,44 @@ class DataSet:
 
         return variables, output
 
-    def preprocessing(self, show_evolution=True, normalization=True):
+    def preprocess(self, show_evolution=True, normalization=True):
         """
             Preprocessing of training and test data.
-            It will
         """
-        if show_evolution:
-            print("\tEvolución del número de variables en el preprocesamiento")
-            if normalization:
-                print("\tNormalización: " + str(self.train_var.shape[1]), end=" ")
-        if normalization:
-            self.__normalize()
 
+        # Impute missing values
+        self.__impute_missing_values()
 
-        cor_threshold = 0.8
-        if show_evolution:
-            if normalization:
-                print(" -> " + str(self.train_var.shape[1]))
-            print("\tEliminar variables con correlación superior a " + str(cor_threshold) + ": " + str(self.train_var.shape[1]), end=" ")
+        # if show_evolution:
+        #     print("\tEvolución del número de variables en el preprocesamiento")
+        #     if normalization:
+        #         print("\tNormalización: " + str(self.train_var.shape[1]), end=" ")
+        # if normalization:
+        #     self.__normalize()
+        #
+        #
+        # cor_threshold = 0.8
+        # if show_evolution:
+        #     if normalization:
+        #         print(" -> " + str(self.train_var.shape[1]))
+        #     print("\tEliminar variables con correlación superior a " + str(cor_threshold) + ": " + str(self.train_var.shape[1]), end=" ")
+        #
+        # self.train_var, self.test_var = self.__red_correlations(cor_threshold)
+        #
+        # var_threshold = 0.1
+        # if show_evolution:
+        #     print("-> " + str(self.train_var.shape[1]))
+        #     print("\tEliminar variables con varianza inferior a " + str(var_threshold) + ": " + str(self.train_var.shape[1]), end=" ")
+        #
+        # self.train_var, self.test_var = self.__red_var(var_threshold)
+        # if show_evolution:
+        #     print(" -> " + str(self.train_var.shape[1]))
 
-        self.train_var, self.test_var = self.__red_correlations(cor_threshold)
-
-        var_threshold = 0.1
-        if show_evolution:
-            print("-> " + str(self.train_var.shape[1]))
-            print("\tEliminar variables con varianza inferior a " + str(var_threshold) + ": " + str(self.train_var.shape[1]), end=" ")
-
-        self.train_var, self.test_var = self.__red_var(var_threshold)
-        if show_evolution:
-            print(" -> " + str(self.train_var.shape[1]))
-
+    def __impute_missing_values(self):
+        # TODO: discutir estrategia de imputación
+        imp = SimpleImputer()
+        self.train_var = pd.DataFrame(imp.fit_transform(self.train_var))
+        self.test_var = pd.DataFrame(imp.fit_transform(self.test_var))
 
     def __normalize(self):
         """
