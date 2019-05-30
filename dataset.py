@@ -7,20 +7,18 @@
 
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
+import numpy as np
 from sklearn.preprocessing import PolynomialFeatures
 import csv
 
 
-class dataset:
-    def __init__(self, file1, file2=None, cont_output=True, reduction=1):
+class DataSet:
+    def __init__(self, train_f, test_f):
         """
             Initialize dataset from file(s)
         """
-        self.continuous = cont_output
-        self.reduction  = reduction
-        self.read_train_test(file1, file2)
-
+        self.read_train_test(train_f, test_f)
+        print("hola")
 
     def read_train_test(self, train_f, test_f):
         """
@@ -29,30 +27,28 @@ class dataset:
         self.train_var, self.train_output = self.read_file_data(train_f)
         self.test_var, self.test_output = self.read_file_data(test_f)
 
-
-    def read_file_data(self, file):
+    @staticmethod
+    def read_file_data(file):
         """
             Given a file returns two dataframes, one with its
             variables and another one with outputs
         """
 
-        csvFile = open(file, 'r')
-        reader = csv.reader(csvFile)
-                
-        names, variables, output = [], [], []
-        for (i, row) in enumerate(reader):
-            if i == 20:
-                names = row[1:]
-            if i > 21:
-                variables.append(row[1:])
-                output.append(row[0])
+        csv_file = open(file, 'r')
+        reader = list(csv.reader(csv_file))[20:]
+        reader = np.array(reader)
 
-        variables = pd.DataFrame(variables[:(int) (len(variables)/self.reduction)])
+        names = reader[0, 1:]
+        variables = np.array(
+            list(list(map(lambda x: np.nan if x == 'na' else np.float(x), l))
+                 for l in reader[1:, 1:]))
+        output = np.fromiter(map(lambda x: -1 if x == "neg" else 1,
+                                 reader[1:, 0]), dtype=np.int)
+        variables = pd.DataFrame(variables)
         variables.columns = names
-        output = pd.DataFrame(output[:(int) (len(output)/self.reduction)])
+        output = pd.DataFrame(output)
 
         return variables, output
-
 
     def preprocessing(self, show_evolution=True, normalization=True):
         """
