@@ -6,8 +6,9 @@ import csv
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.preprocessing import PolynomialFeatures
+from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 from sklearn.impute import SimpleImputer
+
 
 class DataSet:
     def __init__(self, train_f, test_f):
@@ -37,14 +38,12 @@ class DataSet:
         reader = list(csv.reader(csv_file))[20:]
         reader = np.array(reader)
 
-        names = reader[0, 1:]
         variables = np.array(
             list(list(map(lambda x: np.nan if x == 'na' else np.float(x), l))
                  for l in reader[1:, 1:]))
         output = np.fromiter(map(lambda x: -1 if x == "neg" else 1,
                                  reader[1:, 0]), dtype=np.int)
         variables = pd.DataFrame(variables)
-        variables.columns = names
         output = pd.DataFrame(output)
 
         return variables, output
@@ -54,8 +53,16 @@ class DataSet:
             Preprocessing of training and test data.
         """
 
+        #print(self.train_var)
+
         # Impute missing values
+        # TODO: si la estrategia de imputación es la de la media, se puede simplemente poner los NaN a 0 tras normalizar
         self.__impute_missing_values()
+
+        # Normalization
+        self.__normalize()
+
+        #print(self.train_var)
 
         # if show_evolution:
         #     print("\tEvolución del número de variables en el preprocesamiento")
@@ -83,64 +90,26 @@ class DataSet:
         #     print(" -> " + str(self.train_var.shape[1]))
 
     def __impute_missing_values(self):
+        """
+            Impute missing values
+        """
         # TODO: discutir estrategia de imputación
         imp = SimpleImputer()
-        self.train_var = pd.DataFrame(imp.fit_transform(self.train_var))
-        self.test_var = pd.DataFrame(imp.fit_transform(self.test_var))
+        imp.fit(self.train_var)
+        self.train_var = pd.DataFrame(imp.transform(self.train_var))
+        self.test_var = pd.DataFrame(imp.transform(self.test_var))
 
     def __normalize(self):
         """
-            Normalize data between [0,1]
+            Normalize data
         """
+        # TODO: discutir tipo de normalización
 
-        # Normaliza train data
-        rows, _ = self.train_var.shape
-        new_train = []
-
-        n = len(self.train_var.columns)
-        remove_idx = []
-        for column in range(n):
-            max = float(self.train_var.iloc[:,column].max())
-            min = float(self.train_var.iloc[:,column].min())
-
-            new_column = []
-            for row in range(rows):
-                if min != max:
-                    value = (self.train_var.iloc[row, column])/(max-min)
-                else:
-                    value = 0
-                new_column.append(value)
-            new_train.append(new_column)
-
-        self.train_var = pd.DataFrame(new_train).T
-
-
-        # Normalize test data
-        rows, n = self.test_var.shape
-        new_test = []
-
-        for column in range(n):
-            max = float(self.test_var.iloc[:,column].max())
-            min = float(self.test_var.iloc[:,column].min())
-
-            if min != max:
-                new_column = []
-                for row in range(rows):
-                    value = (self.test_var.iloc[row, column])/(max-min)
-                    new_column.append(value)
-                new_test.append(new_column)
-            else:
-                # We can not use data from test to deduce which 
-                # indexes should be removed, so we keep a constant
-                # column
-                new_column = []
-                for row in range(rows):
-                    value = 0
-                    new_column.append(value)
-                new_test.append(new_column)
-        self.test_var = pd.DataFrame(new_test).T
-
-
+        # Transform data so that it has mean 0 and s.d. 1
+        sc = StandardScaler()
+        sc.fit(self.train_var)
+        self.train_var = pd.DataFrame(sc.transform(self.train_var))
+        self.test_var = pd.DataFrame(sc.transform(self.test_var))
 
     def __red_var(self, threshold):
         """
@@ -205,7 +174,7 @@ class DataSet:
         poly = PolynomialFeatures(degree, interaction_only=interaction_only)
         print("Aumento de dimensionalidad: " + str(self.train_var.shape[1]) + " -> ", end=" ")
         self.train_var = pd.DataFrame(poly.fit_transform(self.train_var))
-        self.test_var  = pd.DataFrame(poly.fit_transform(self.test_var))
+        self.test_var = pd.DataFrame(poly.fit_transform(self.test_var))
         print(self.train_var.shape[1])
 
 
