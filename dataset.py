@@ -10,7 +10,6 @@ from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 from sklearn.impute import SimpleImputer
 
 
-
 class DataSet:
     def __init__(self, train_f, test_f):
         """
@@ -39,7 +38,8 @@ class DataSet:
         reader = np.array(reader)
 
         variables = np.array(
-            list(list(map(lambda x: np.nan if x == 'na' else np.float(x), l)) for l in reader[1:, 1:]))
+            list(list(map(lambda x: np.nan if x == 'na' else np.float(x), l))
+                 for l in reader[1:, 1:]))
         output = np.fromiter(map(lambda x: -1 if x == "neg" else 1,
                                  reader[1:, 0]), dtype=np.int)
         variables = pd.DataFrame(variables)
@@ -176,67 +176,6 @@ class DataSet:
         self.train_var = pd.DataFrame(poly.fit_transform(self.train_var))
         self.test_var = pd.DataFrame(poly.fit_transform(self.test_var))
         print(self.train_var.shape[1])
-
-
-    # Getters
-
-    def get_item(self, i, train_ds=True):
-        """
-            Get item with index i in training/test data 
-            depending on variable train_ds
-        """
-        if train_ds:
-            return self.train_var.iloc[i,:], self.train_output.iloc[i,:]
-        else:
-            return self.test_var.iloc[i,:], self.test_output.iloc[i,:]
-
-
-    def get_num_items(self, train_ds=True):
-        """
-            Get number of items in training/test data 
-            depending on variable train_ds
-        """
-        if train_ds:
-            return self.train_var.shape[0]
-        else:
-            return self.test_var.shape[0]
-
-
-    def get_output(self, i, train_ds=True):
-        """
-            Get output of specific index i in training/test data 
-            depending on variable train_ds
-        """
-        if train_ds:
-            return self.train_output.iloc[i]
-        else:
-            return self.test_output.iloc[i]
-
-    def get_train_data(self):
-        """
-            Get variables and output of training data
-        """        
-        n = self.get_num_items()
-        X, y = [], []
-        for i in range(n):
-            new_X, new_y = self.get_item(i)
-            X.append(list(new_X))
-            y.append(list(new_y)[0])
-
-        return X, y
-
-    def get_test_data(self):
-        """
-            Get variables and output of test data
-        """
-        n = len(self.test_var)
-        X, y = [], []
-        for i in range(n):
-            new_X, new_y = self.get_item(i, train_ds=False)
-            X.append(list(new_X))
-            y.append(list(new_y)[0])
-
-        return X, y
 
 
     # Plotting functions
