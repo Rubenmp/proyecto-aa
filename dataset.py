@@ -10,6 +10,7 @@ from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 from sklearn.impute import SimpleImputer
 
 
+
 class DataSet:
     def __init__(self, train_f, test_f):
         """
@@ -22,7 +23,7 @@ class DataSet:
 
     def read_train_test(self, train_f, test_f):
         """
-            Read training and test data directly from two files
+            Read training and test data from files
         """
         self.train_var, self.train_output = self.read_file_data(train_f)
         self.test_var, self.test_output = self.read_file_data(test_f)
@@ -33,14 +34,12 @@ class DataSet:
             Given a file returns two dataframes, one with its
             variables and another one with outputs
         """
-
         csv_file = open(file, 'r')
         reader = list(csv.reader(csv_file))[20:]
         reader = np.array(reader)
 
         variables = np.array(
-            list(list(map(lambda x: np.nan if x == 'na' else np.float(x), l))
-                 for l in reader[1:, 1:]))
+            list(list(map(lambda x: np.nan if x == 'na' else np.float(x), l)) for l in reader[1:, 1:]))
         output = np.fromiter(map(lambda x: -1 if x == "neg" else 1,
                                  reader[1:, 0]), dtype=np.int)
         variables = pd.DataFrame(variables)
@@ -52,6 +51,7 @@ class DataSet:
         """
             Preprocessing of training and test data.
         """
+        print("Preprocesamiento de datos para clasificación")
 
         #print(self.train_var)
 
@@ -262,3 +262,14 @@ class DataSet:
         # variables aleatorias discretas
         pd.plotting.scatter_matrix(df, diagonal='hist')
         plt.show()
+
+
+
+def get_dataset(small=False):
+    data_folder = "./datos"
+    if small:
+        train_f, test_f = "aps_failure_test_set.csv", "aps_failure_test_set.csv" 
+    else:
+        train_f, test_f = "aps_failure_training_set.csv", "aps_failure_test_set.csv" 
+    ds = DataSet(f"{data_folder}/{train_f}", f"{data_folder}/{test_f}") 
+    return ds
