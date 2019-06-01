@@ -35,8 +35,8 @@ def validate(dataset, model, error_func):
         acc_error += error_func(y_test, model.predict(X_test))
 
 
-# Clasification data
-ds = get_dataset(small=True)
+# Classification data
+ds = get_dataset(small=False)
 ds.preprocess()
 
 pos_class_weight = 50

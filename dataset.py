@@ -12,7 +12,6 @@ from sklearn.impute import SimpleImputer
 
 
 
-
 class DataSet:
     def __init__(self, train_f, test_f):
         """
@@ -22,6 +21,7 @@ class DataSet:
         self.test_var, self.test_output = None, None
 
         self.read_train_test(train_f, test_f)
+        self.nan_histogram()
 
     def read_train_test(self, train_f, test_f):
         """
@@ -73,8 +73,6 @@ class DataSet:
             Impute missing values
         """
         # TODO: discutir estrategia de imputación
-        print("% de valores con nan")
-        print(list(map(lambda x: np.nan in x, self.train_var)).count(True) / len(self.train_var))
         imp = SimpleImputer()
         imp.fit(self.train_var)
         self.train_var = pd.DataFrame(imp.transform(self.train_var))
@@ -134,6 +132,18 @@ class DataSet:
             Plot train variables (i,j)
         """
         plt.scatter(self.train_var.iloc[:,i], self.train_var.iloc[:,j])
+        plt.show()
+
+    def nan_histogram(self):
+        xs = sum(np.array(list(map(lambda x: np.isnan(x),
+                                   self.train_var.values)))) \
+             / len(self.train_var)
+        xs.sort()
+        plt.hist(xs, 20, density=False)
+        plt.xlabel("Porcentaje de valores desconocidos en una variable")
+        plt.ylabel("Porcentaje de variables")
+        plt.title("Histograma de la distribución de valores desconocidos por "
+                  "variables")
         plt.show()
 
 
