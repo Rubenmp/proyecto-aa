@@ -22,13 +22,18 @@ Otra características que cabe señalar es la cantidad de atributos que faltan (
 
 Trataremos de diseñar un modelo para este problema de cada uno de los siguientes tipos:
 
-* SVM (Support Vector Machine)
-* Red neuronal
-* Random Forest
+* SVM (Support Vector Machine);
+* Red neuronal;
+* Random Forest;
+* AdaBoost.
 
 # Preprocesado de datos
 
 ## Tratamiento de valores desconocidos
+
+El principal problema a resolver en el preprocesado de datos es la cantidad de valores desconocidos en el conjunto.
+
+El 99% de los ejemplos tienen algún valor desconocido, de modo que no es viable eliminar los ejemplos con valores desconocidos.
 
 ## Normalización de datos
 

@@ -36,7 +36,7 @@ def validate(dataset, model, error_func):
 
 
 # Classification data
-ds = get_dataset(small=False)
+ds = get_dataset(small=True)
 ds.preprocess()
 
 pos_class_weight = 50

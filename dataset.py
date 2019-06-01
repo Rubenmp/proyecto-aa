@@ -21,7 +21,7 @@ class DataSet:
         self.test_var, self.test_output = None, None
 
         self.read_train_test(train_f, test_f)
-        self.nan_histogram()
+        #self.nan_histogram()
 
     def read_train_test(self, train_f, test_f):
         """
