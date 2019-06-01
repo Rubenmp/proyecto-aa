@@ -9,7 +9,7 @@ import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 from sklearn.impute import SimpleImputer
-
+import sklearn
 
 
 class DataSet:
@@ -122,6 +122,23 @@ class DataSet:
         self.train_var = pd.DataFrame(poly.fit_transform(self.train_var))
         self.test_var = pd.DataFrame(poly.fit_transform(self.test_var))
         print(self.train_var.shape[1])
+
+
+    # Getter
+    def get_sample_weight(self, train=True):
+        pos_class_weight = 50
+        neg_class_weight = 1
+        w_dic = {1: pos_class_weight, -1: neg_class_weight}
+        if train:
+            return sklearn.utils.class_weight.compute_sample_weight(w_dic, self.train_output)
+        else:
+            return sklearn.utils.class_weight.compute_sample_weight(w_dic, self.test_output)
+
+    def get_sample_weight_train(self):
+        return self.get_sample_weight()
+        
+    def get_sample_weight_test(self):
+        return self.get_sample_weight(train=False)      
 
 
     # Plotting functions

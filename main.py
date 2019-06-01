@@ -19,35 +19,57 @@ random_state = 0
 print("Problema de clasificación APS Failure at Scania Trucks Data Set\n")
 
 
-def validate(dataset, model, error_func):
-    # TODO: error_func
-    X = dataset.train_var
+def validate(dataset, model):
+    X = dataset.train_var.values
     y = dataset.train_output
 
-    kf = KFold(n_splits=5)
+    n_splits = 5
+    kf = KFold(n_splits=n_splits)
 
-    acc_error = 0
+    score = 0
     for train_idx, test_idx in kf.split(X):
+        # train_idx and test_idx are indexes over
+        # training examples in dataset, test_idx represents
+        # indexes of validation set
         X_train, X_test = X[train_idx], X[test_idx]
         y_train, y_test = y[train_idx], y[test_idx]
 
         model.fit(X_train, y_train)
-        acc_error += error_func(y_test, model.predict(X_test))
+
+        score += model.score(X_test, y_test, dataset.get_sample_weight_train()[test_idx])
+        
+    return score/n_splits
+
+
+def best_model_val(dataset, models):
+    scores = []
+    for model in models:
+        score = validate(dataset, model)
+        scores.append(score)
+
+    best_model_idx = 0
+    return models[best_model_idx]
+
+
+def best_svm(dataset):
+    svm_clf1 = sklearn.svm.SVC(kernel='linear', gamma='scale')
+    svm_clf2 = sklearn.svm.SVC(kernel='poly', gamma='scale')
+    models = [svm_clf1, svm_clf2]
+
+    return best_model_val(dataset, models)
 
 
 # Classification data
 ds = get_dataset(small=True)
 ds.preprocess()
 
-pos_class_weight = 50
-neg_class_weight = 1
-w_dic = {1: pos_class_weight, -1: neg_class_weight}
-sample_weight = sklearn.utils.class_weight.compute_sample_weight(w_dic, ds.train_output)
+
 
 
 # SVM
-svm_clf = sklearn.svm.LinearSVC()
-svm_clf.fit(ds.train_var, ds.train_output, sample_weight=sample_weight)
+svm_clf = best_svm(ds)
+
+
 
 # Neural nets
 
