@@ -18,7 +18,7 @@ En este trabajo trataremos el conjunto de datos *APS failure at Scania Trucks*. 
 
 El problema consiste en predecir la clase de un ejemplo a partir de los atributos, por tanto es un problema de **clasificación**. Según se especifica en la descripción del conjunto de datos, no todos los errores de clasificación tienen el mismo coste: el coste de los falsos positivos es 50 veces mayor que el de los falsos negativos.
 
-Otra características que cabe señalar es la cantidad de atributos que faltan (al TODO: ? % de los datos le falta algún atributo) y que toda las variables están anonimizadas por motivos corporativos.
+Otra características que cabe señalar es la cantidad de atributos que faltan (al 99% de los datos le falta algún atributo), que toda las variables están anonimizadas por motivos corporativos y que la distribución de clases está muy desbalanceada: solo el 1,7% de los ejemplos del conjunto de entrenamiento pertenecen a la clase positiva.
 
 Trataremos de diseñar un modelo para este problema de cada uno de los siguientes tipos:
 
@@ -34,6 +34,14 @@ Trataremos de diseñar un modelo para este problema de cada uno de los siguiente
 El principal problema a resolver en el preprocesado de datos es la cantidad de valores desconocidos en el conjunto.
 
 El 99% de los ejemplos tienen algún valor desconocido, de modo que no es viable eliminar los ejemplos con valores desconocidos.
+
+Es razonable plantearse la posibilidad de eliminar variables con valores desconocidos para la mayoría de ejemplos. Sin embargo, podemos ver en la Figura 1 que la amplia mayoría de variables tienen menos de un 10% de valores desconocidos y ninguna supera el rango de 80% de valores desconocidos. Por tanto eliminar variables supondría sacrificar demasiada información.
+
+![](./imgs/histograma_nan.png)
+
+Optamos por una estrategia de imputación de valores desconocidos.
+
+TODO: discutir cuál y por qué
 
 ## Normalización de datos
 
@@ -61,7 +69,23 @@ Para la validación dividiremos el conjunto de training en cinco subconjuntos di
 
 # Métrica del ajuste
 
-TODO: discutir métrica
+En este problema se especifica cuál que el objetivo es minimizar el coste, definido como
+
+$$\text{coste\_total} = \text{coste\_1} \times \text{FN} + \text{coste\_2} \times \text{FN} \text{,}$$
+
+donde $\text{coste\_1} = 10$, $\text{coste\_2} = 500$ y $\text{FP}$ y $\text{FN}$ denotan, respectivamente, el número de datos incorrectamente clasificados por el modelo como positivos y negativos. Es decir, el coste de un falso negativo (no detectar la verdadera causa de la avería) es mucho mayor que el de un falso positivo (arreglar innecesariamente el APS).
+
+Por tanto, una métrica de la bondad del ajuste tiene que cumplir que su maximización sea equivalente a la minimización de $\text{coste\_total}$. Una posibilidad es usar una tasa de acierto ponderada de la siguiente manera:
+
+$$\text{tasa\_acierto\_ponderada} = \frac{50 \times \text{VP} + \text{VN}}{50 \times \text{P} + \text{N}} \text{,}$$
+
+donde $P$ y $N$ denotan el número de ejemplos datos positivos y negativos y $VP$ y $VN$ representan, respectivamente, el número de datos correctamente clasificados por el modelo como positivos y negativos.
+
+Podemos comprobar que minimizar $\text{coste\_total}$ es equivalente a maximizar $\text{tasa\_acierto\_ponderada}$. En efecto, maximizar $\text{tasa\_acierto\_ponderada}$ equivale a maximizar $50 \times \text{VP} + \text{VN} = 50 \times \text{P} - 50 \times \text{FP} + \text{N} - \text{FN}$ porque $50 \times \text{P} + \text{N}$ es constante, y por la misma razón es equivalente a minimizar $50 \times \text{FP} + \text{FN}$, que es obviamente lo mismo que minimizar $\text{coste\_total}$.
+
+La métrica $\text{coste\_total}$ tiene la virtud de estar acotada entre 0, que representa que el coste es el máximo posible, y 1, que representa que el coste es el mínimo posible.
+
+TODO: terminar
 
 # Estimación del error
 
