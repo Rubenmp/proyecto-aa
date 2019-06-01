@@ -33,12 +33,10 @@ def validate(dataset, model, error_func):
         model.fit(X_train, y_train)
         acc_error += error_func(y_test, model.predict(X_test))
 
+
 # Clasification data
 ds = get_dataset(small=True)
 ds.preprocess()
-
-
-
 
 
 # SVM
@@ -51,4 +49,3 @@ ds.preprocess()
 
 
 # Random forest
-

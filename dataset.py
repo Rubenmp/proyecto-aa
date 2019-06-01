@@ -6,6 +6,7 @@ import csv
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.decomposition import PCA
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 from sklearn.impute import SimpleImputer
 
@@ -69,32 +70,8 @@ class DataSet:
         # Normalization
         self.__normalize()
 
-        #print(self.train_var)
-
-        # if show_evolution:
-        #     print("\tEvolución del número de variables en el preprocesamiento")
-        #     if normalization:
-        #         print("\tNormalización: " + str(self.train_var.shape[1]), end=" ")
-        # if normalization:
-        #     self.__normalize()
-        #
-        #
-        # cor_threshold = 0.8
-        # if show_evolution:
-        #     if normalization:
-        #         print(" -> " + str(self.train_var.shape[1]))
-        #     print("\tEliminar variables con correlación superior a " + str(cor_threshold) + ": " + str(self.train_var.shape[1]), end=" ")
-        #
-        # self.train_var, self.test_var = self.__red_correlations(cor_threshold)
-        #
-        # var_threshold = 0.1
-        # if show_evolution:
-        #     print("-> " + str(self.train_var.shape[1]))
-        #     print("\tEliminar variables con varianza inferior a " + str(var_threshold) + ": " + str(self.train_var.shape[1]), end=" ")
-        #
-        # self.train_var, self.test_var = self.__red_var(var_threshold)
-        # if show_evolution:
-        #     print(" -> " + str(self.train_var.shape[1]))
+        # PCA
+        self.__pca(10)  # TODO: discutir número de componentes
 
     def __impute_missing_values(self):
         """
@@ -118,42 +95,11 @@ class DataSet:
         self.train_var = pd.DataFrame(sc.transform(self.train_var))
         self.test_var = pd.DataFrame(sc.transform(self.test_var))
 
-    def __red_var(self, threshold):
-        """
-            Remove variables with variance < threshold
-        """        
-        idx = []
-
-        n = len(self.train_var.columns)
-        for column in range(n):
-            var = self.train_var.iloc[:,column].var()
-            if var < threshold:
-                idx.append(column)
-
-        yield self.remove_indexes(self.train_var, idx)
-        yield self.remove_indexes(self.test_var, idx)
-
-
-    def __red_correlations(self, threshold):
-        """
-            Remove variables which correlates > threshold with respect to others
-        """
-
-        # Compute indexes with high correlation
-        corr_matrix = self.train_var.corr()
-        remove_idx  = []
-        n = corr_matrix.shape[0]
-
-        n = len(corr_matrix.columns)
-        for i in range(n):
-            for j in range(n):
-                if i != j and corr_matrix.iloc[i,j] > threshold:
-                    if i not in remove_idx:
-                        remove_idx.append(i)
-
-        yield self.remove_indexes(self.train_var, remove_idx)
-        yield self.remove_indexes(self.test_var, remove_idx)
-
+    def __pca(self, n_components):
+        pca = PCA(n_components=n_components)
+        pca.fit(self.train_var)
+        self.train_var = pd.DataFrame(pca.transform(self.train_var))
+        self.test_var = pd.DataFrame(pca.transform(self.test_var))
 
     def remove_indexes(self, data, idx):
         """
@@ -170,7 +116,6 @@ class DataSet:
 
         new_matrix = pd.DataFrame(new_matrix).T
         return new_matrix
-
 
     def increase_var_pol(self, degree=1, interaction_only=True):
         """ Transform dimensionaliy of our dataset
@@ -193,22 +138,6 @@ class DataSet:
         """
         plt.scatter(self.train_var.iloc[:,i], self.train_var.iloc[:,j])
         plt.show()
-
-
-    def plot_all(self):
-        """
-            Show relations between variables in training data.
-            If variables are continuous the diagonal will show 
-            an estimation of the probability density function,
-            otherwise it will show histograms
-        """
-
-        df = self.train_var
-        # Se muestran histogramas en la diagonal en
-        # variables aleatorias discretas
-        pd.plotting.scatter_matrix(df, diagonal='hist')
-        plt.show()
-
 
 
 def get_dataset(small=False):
