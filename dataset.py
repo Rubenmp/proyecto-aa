@@ -47,6 +47,8 @@ class DataSet:
                                  reader[1:, 0]), dtype=np.int)
         variables = pd.DataFrame(variables)
 
+        csv_file.close()
+
         return variables, output
 
     def preprocess(self, show_evolution=True, normalization=True):
