@@ -14,6 +14,7 @@ import sklearn
 
 import pandas as pd
 
+random_state = 0
 
 print("Problema de clasificación APS Failure at Scania Trucks Data Set\n")
 
@@ -38,9 +39,15 @@ def validate(dataset, model, error_func):
 ds = get_dataset(small=True)
 ds.preprocess()
 
+pos_class_weight = 50
+neg_class_weight = 1
+w_dic = {1: pos_class_weight, -1: neg_class_weight}
+sample_weight = sklearn.utils.class_weight.compute_sample_weight(w_dic, ds.train_output)
+
 
 # SVM
-
+svm_clf = sklearn.svm.LinearSVC()
+svm_clf.fit(ds.train_var, ds.train_output, sample_weight=sample_weight)
 
 # Neural nets
 
