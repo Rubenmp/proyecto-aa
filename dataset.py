@@ -46,7 +46,6 @@ class DataSet:
         output = np.fromiter(map(lambda x: -1 if x == "neg" else 1,
                                  reader[1:, 0]), dtype=np.int)
         variables = pd.DataFrame(variables)
-        output = pd.DataFrame(output)
 
         return variables, output
 
