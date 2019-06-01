@@ -78,6 +78,8 @@ class DataSet:
             Impute missing values
         """
         # TODO: discutir estrategia de imputación
+        print("% de valores con nan")
+        print(list(map(lambda x: np.nan in x, self.train_var)).count(True) / len(self.train_var))
         imp = SimpleImputer()
         imp.fit(self.train_var)
         self.train_var = pd.DataFrame(imp.transform(self.train_var))
