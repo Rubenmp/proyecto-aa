@@ -9,6 +9,13 @@ import numpy as np
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 from sklearn.impute import SimpleImputer
 
+from enum import Enum
+
+
+class Result(Enum):
+    Positive = 1
+    Negative = -1
+
 
 class DataSet:
     def __init__(self, train_f, test_f):
@@ -40,7 +47,7 @@ class DataSet:
         variables = np.array(
             list(list(map(lambda x: np.nan if x == 'na' else np.float(x), l))
                  for l in reader[1:, 1:]))
-        output = np.fromiter(map(lambda x: -1 if x == "neg" else 1,
+        output = np.fromiter(map(lambda x: Result.Negative if x == "neg" else Result.Positive,
                                  reader[1:, 0]), dtype=np.int)
         variables = pd.DataFrame(variables)
         output = pd.DataFrame(output)

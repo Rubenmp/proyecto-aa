@@ -10,7 +10,7 @@ Autores:
 
 from dataset import *
 from sklearn.model_selection import KFold
-
+import sklearn
 
 import pandas as pd
 
@@ -36,3 +36,19 @@ def validate(dataset, model, error_func):
 # Clasification data
 ds = get_dataset(small=True)
 ds.preprocess()
+
+
+
+
+
+# SVM
+
+
+# Neural nets
+
+
+# Boosting
+
+
+# Random forest
+
