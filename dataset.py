@@ -168,7 +168,7 @@ class DataSet:
 def get_dataset(small=False):
     data_folder = "./datos"
     if small:
-        train_f, test_f = "aps_failure_test_set.csv", "aps_failure_test_set.csv" 
+        train_f, test_f = "reduced_training_set.csv", "reduced_test_set.csv"
     else:
         train_f, test_f = "aps_failure_training_set.csv", "aps_failure_test_set.csv" 
     ds = DataSet(f"{data_folder}/{train_f}", f"{data_folder}/{test_f}") 

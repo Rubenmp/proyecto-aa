@@ -41,34 +41,36 @@ def validate(dataset, model):
     return score/n_splits
 
 
-def best_model_val(dataset, models):
-    scores = []
+def compare_models(dataset, models):
+    scores = {}
+    max_score = 0
+    max_score_model = None
+
     for model in models:
-        score = validate(dataset, model)
-        scores.append(score)
+        score = validate(dataset, models[model])
+        scores[model] = score
+        if score > max_score:
+            max_score = score
+            max_score_model = model
 
-    best_model_idx = 0
-    return models[best_model_idx]
+    for model in models:
+        print(f"El score de {model} es {scores[model]}.")
 
+    print(f"El mejor modelo es {max_score_model}.")
 
-def best_svm(dataset):
-    svm_clf1 = sklearn.svm.SVC(kernel='linear', gamma='scale')
-    svm_clf2 = sklearn.svm.SVC(kernel='poly', gamma='scale')
-    models = [svm_clf1, svm_clf2]
+    return max_score_model, models[max_score_model]
 
-    return best_model_val(dataset, models)
+svm_models = {
+    "SVM con kernel lineal": sklearn.svm.SVC(kernel='linear', gamma='scale'),
+    "SVM con kernel polinómico": sklearn.svm.SVC(kernel='poly', gamma='scale')
+}
 
 
 # Classification data
 ds = get_dataset(small=True)
 ds.preprocess()
 
-
-
-
-# SVM
-svm_clf = best_svm(ds)
-
+compare_models(ds, svm_models)
 
 
 # Neural nets
