@@ -104,6 +104,7 @@ models = {
 ds = get_dataset(small=True)
 ds.preprocess()
 
+
 #compare_models(ds, svm_models)
 
 

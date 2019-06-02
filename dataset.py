@@ -101,12 +101,12 @@ class DataSet:
 
 
     def __pca(self, n_components):
-        print(self.train_var.shape)
+        #print(self.train_var.shape)
         pca = PCA(n_components=n_components)
         pca.fit(self.train_var)
         self.train_var = pd.DataFrame(pca.transform(self.train_var))
         self.test_var = pd.DataFrame(pca.transform(self.test_var))
-        print(self.train_var.shape)
+        #print(self.train_var.shape)
 
 
     def remove_indexes(self, data, idx):
