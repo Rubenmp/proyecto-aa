@@ -13,6 +13,10 @@ import sklearn
 
 
 class DataSet:
+    pos_class_weight = 500
+    neg_class_weight = 10
+    weights_dic = {1: pos_class_weight, -1: neg_class_weight}
+    
     def __init__(self, train_f, test_f):
         """
             Initialize dataset from file(s)
@@ -21,7 +25,7 @@ class DataSet:
         self.test_var, self.test_output = None, None
 
         self.read_train_test(train_f, test_f)
-        #self.nan_histogram()
+
 
     def read_train_test(self, train_f, test_f):
         """
@@ -29,6 +33,7 @@ class DataSet:
         """
         self.train_var, self.train_output = self.read_file_data(train_f)
         self.test_var, self.test_output = self.read_file_data(test_f)
+
 
     @staticmethod
     def read_file_data(file):
@@ -51,6 +56,7 @@ class DataSet:
 
         return variables, output
 
+
     def preprocess(self, show_evolution=True, normalization=True):
         """
             Preprocessing of training and test data.
@@ -69,6 +75,7 @@ class DataSet:
         # PCA
         self.__pca(10)  # TODO: discutir número de componentes
 
+
     def __impute_missing_values(self):
         """
             Impute missing values
@@ -78,6 +85,7 @@ class DataSet:
         imp.fit(self.train_var)
         self.train_var = pd.DataFrame(imp.transform(self.train_var))
         self.test_var = pd.DataFrame(imp.transform(self.test_var))
+
 
     def __normalize(self):
         """
@@ -91,11 +99,13 @@ class DataSet:
         self.train_var = pd.DataFrame(sc.transform(self.train_var))
         self.test_var = pd.DataFrame(sc.transform(self.test_var))
 
+
     def __pca(self, n_components):
         pca = PCA(n_components=n_components)
         pca.fit(self.train_var)
         self.train_var = pd.DataFrame(pca.transform(self.train_var))
         self.test_var = pd.DataFrame(pca.transform(self.test_var))
+
 
     def remove_indexes(self, data, idx):
         """
@@ -113,6 +123,7 @@ class DataSet:
         new_matrix = pd.DataFrame(new_matrix).T
         return new_matrix
 
+
     def increase_var_pol(self, degree=1, interaction_only=True):
         """ Transform dimensionaliy of our dataset
         Suppose variables [a,b] 
@@ -128,17 +139,16 @@ class DataSet:
 
     # Getter
     def get_sample_weight(self, train=True):
-        pos_class_weight = 50
-        neg_class_weight = 1
-        w_dic = {1: pos_class_weight, -1: neg_class_weight}
         if train:
-            return sklearn.utils.class_weight.compute_sample_weight(w_dic, self.train_output)
+            return sklearn.utils.class_weight.compute_sample_weight(DataSet.weights_dic, self.train_output)
         else:
-            return sklearn.utils.class_weight.compute_sample_weight(w_dic, self.test_output)
+            return sklearn.utils.class_weight.compute_sample_weight(DataSet.weights_dic, self.test_output)
+
 
     def get_sample_weight_train(self):
         return self.get_sample_weight()
         
+
     def get_sample_weight_test(self):
         return self.get_sample_weight(train=False)      
 
@@ -151,6 +161,7 @@ class DataSet:
         """
         plt.scatter(self.train_var.iloc[:,i], self.train_var.iloc[:,j])
         plt.show()
+
 
     def nan_histogram(self):
         xs = sum(np.array(list(map(lambda x: np.isnan(x),
