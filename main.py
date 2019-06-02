@@ -126,14 +126,14 @@ def score_f(y_true, y_pred):
     sample_weight=compute_sample_weight(w_dic, y_true)
     return accuracy_score(y_true, y_pred, sample_weight=sample_weight)
 
-scorer = make_scorer(score_f, greater_is_better=True)
+scorer = make_scorer(score_f)
 
 nn_clf = GridSearchCV(nn_clf, nn_parameters, n_jobs=-1, cv=5, scoring=scorer)
 nn_clf.fit(ds.train_var, ds.train_output)
 
 # Ver score
 
-y_true, y_pred = ds.test_output , clf.predict(ds.test_var)
+y_true, y_pred = ds.test_output , nn_clf.predict(ds.test_var)
 score = score_f(y_true, y_pred)
-print("mejores parametros: " + str(clf.best_params_))
+print("mejores parametros: " + str(nn_clf.best_params_))
 

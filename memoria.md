@@ -43,7 +43,18 @@ Optamos por una estrategia de imputación de valores desconocidos. Esta estrateg
 
 TODO: discutir cuál y por qué
 
+## Outliers
+
+
 ## Normalización de datos
+
+
+## Análisis de componentes principales
+
+Existen diferentes técnicas para reducir la dimensionalidad de los datos. Se podrían eliminar las variables con alta correlación o varianza muy baja. Otra técnica más adecuada es PCA (Principal Component Analysis), que considera nuevas variables (combinaciones lineales de las originales) no correlacionadas llamadas componentes principales, ordenadas por la cantidad de varianza original que describen. Posteriormente, se elige el porcentaje de varianza que se quiere poder explicar y se eliminan las componentes principales que no sean relevantes, por ello se trata de una técnica de reducción de la dimensionalidad.
+
+Una ventaja de esta técnica es que ayuda a reducir el sobreajuste, al quedarse con la información esencial del problema. La desventaja de este análisis es que de que se pierde interpretabilidad de los datos al optimizar con combinaciones lineales de los mismos. En este caso no nos importa esta desventaja ya que las variables iniciales estaban ya anonimizadas.
+
 
 # Selección de clases de funciones
 
@@ -75,7 +86,7 @@ Cada modelo tiene diferentes parámetros que pueden ajustarse para mejorar la ef
 
 En este problema se especifica cuál que el objetivo es minimizar el coste, definido como
 
-$$\text{coste\_total} = \text{coste\_1} \times \text{FN} + \text{coste\_2} \times \text{FN} \text{,}$$
+$$\text{coste\_total} = \text{coste\_1} \times \text{FP} + \text{coste\_2} \times \text{FN} \text{,}$$
 
 donde $\text{coste\_1} = 10$, $\text{coste\_2} = 500$ y $\text{FP}$ y $\text{FN}$ denotan, respectivamente, el número de datos incorrectamente clasificados por el modelo como positivos y negativos. Es decir, el coste de un falso negativo (no detectar la verdadera causa de la avería) es mucho mayor que el de un falso positivo (arreglar innecesariamente el APS).
 
