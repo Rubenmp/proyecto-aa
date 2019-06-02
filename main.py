@@ -9,12 +9,11 @@ Autores:
 """
 
 from dataset import *
-from sklearn.model_selection import KFold
+from sklearn.metrics import make_scorer
+from sklearn.model_selection import KFold, GridSearchCV
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
-
-import pandas as pd
 
 random_state = 0
 
@@ -89,7 +88,7 @@ models = {
 ds = get_dataset(small=True)
 ds.preprocess()
 
-compare_models(ds, svm_models)
+#compare_models(ds, svm_models)
 
 
 # Neural networks
@@ -99,3 +98,21 @@ compare_models(ds, svm_models)
 
 
 # Random forest
+
+nn_clf = MLPClassifier(max_iter=100)
+parameter_space = {
+    #'hidden_layer_sizes': [(50,50,50), (50,100,50), (100,)],
+    'activation': ['tanh', 'relu'],
+    #'solver': ['sgd', 'adam'],
+    'alpha': [0.0001, 0.05],
+    #'learning_rate': ['constant','adaptive'],
+}
+
+scorer = make_scorer(accuracy_score)
+
+clf = GridSearchCV(nn_clf, parameter_space, n_jobs=-1, cv=3, scoring=scorer)
+clf.fit(ds.train_var, ds.train_output)
+
+# Ver score
+y_true, y_pred = ds.test_output , clf.predict(ds.test_var)
+print(clf.best_params_)

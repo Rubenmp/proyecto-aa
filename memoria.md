@@ -59,6 +59,10 @@ Para la validación dividiremos el conjunto de training en cinco subconjuntos di
 
 # Definición de los modelos y estimación de parámetros
 
+
+Cada modelo tiene diferentes parámetros que pueden ajustarse para mejorar la eficacia para cada conjunto de datos. Por ejemplo, SVM tiene diferentes funciones kernel (lineal, polinómica, rbf, sigmoide). Hay algunos parámetros que pueden elegirse mediante el estudio del problema, si se ve claramente que los datos son linealmente separables no se necesita probar con todos los kernels. Otras veces la elección no está tan clara, por ello se puede llevar a cabo optimización de hiperparámetros. En esta técnica se elige para cada hiperparámetro un conjunto de valores con los que probar y se busca la mejor combinación de estos mediante validación cruzada dentro del conjunto de entrenamiento. Si hay muchos hiperparámetros que ajustar puede que por tiempo de cómputo no interese probar con todas las combinaciones, por ello existen estimadores de hiperparámetros que hacen búsquedas aleatorizadas.
+
+
 ## SVM
 
 ## Red Neuronal
@@ -83,9 +87,12 @@ donde $P$ y $N$ denotan el número de ejemplos datos positivos y negativos y $VP
 
 Podemos comprobar que minimizar $\text{coste\_total}$ es equivalente a maximizar $\text{tasa\_acierto\_ponderada}$. En efecto, maximizar $\text{tasa\_acierto\_ponderada}$ equivale a maximizar $50 \times \text{VP} + \text{VN} = 50 \times \text{P} - 50 \times \text{FP} + \text{N} - \text{FN}$ porque $50 \times \text{P} + \text{N}$ es constante, y por la misma razón es equivalente a minimizar $50 \times \text{FP} + \text{FN}$, que es obviamente lo mismo que minimizar $\text{coste\_total}$.
 
-La métrica $\text{coste\_total}$ tiene la virtud de estar acotada entre 0, que representa que el coste es el máximo posible, y 1, que representa que el coste es el mínimo posible.
+La métrica $\text{tasa\_acierto\_ponderada}$ tiene la virtud de estar acotada entre 0, que representa que el coste es el máximo posible, y 1, que representa que el coste es el mínimo posible.
 
 TODO: terminar
+
+
+
 
 # Estimación del error
 
