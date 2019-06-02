@@ -10,11 +10,12 @@ Autores:
 
 from dataset import *
 from sklearn.decomposition import PCA
+from sklearn.linear_model import Perceptron
 from sklearn.metrics import make_scorer, accuracy_score
-from sklearn.model_selection import KFold, GridSearchCV
+from sklearn.model_selection import KFold, RandomizedSearchCV
 from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import Pipeline
-from sklearn.svm import SVC
+from sklearn.preprocessing import PolynomialFeatures
 from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
 from sklearn.utils.class_weight import compute_sample_weight
 
@@ -78,66 +79,127 @@ def compare_models(dataset, models):
     return max_score_model, models[max_score_model]
 
 
-svm_models = {
-    "SVM con kernel polinómico": SVC(kernel='poly', gamma='scale'),
-    "SVM con kernel RBF": SVC(kernel='rbf', gamma='scale')
-}
+def tune_parameters(classifier, parameters):
+    classifier = RandomizedSearchCV(classifier, parameters, n_jobs=-1, cv=5,
+                                    scoring=scorer, n_iter=1)
+    classifier.fit(ds.train_var, ds.train_output)
 
-models = {
-    # Parámetros: C, kernel, degree, gamma, tol?
-    "SVM": SVC(),
-    # Parámetros: hidden_layer_sizes, activation, solver, alpha, batch_size?*,
-    # learning_rate*, learning_rate_init*, power_t*, max_iter?, tol?, momentum*
-    "Neural network": MLPClassifier(),
-    # base_estimator, n_estimators, learning_rate
-    # TODO: usa funciones stamp?
-    "AdaBoost": AdaBoostClassifier(),
-    # n_estimators, criterion, max_depth, min_samples_split, min_samples_leaf,
-    # min_weight_fraction_leaf, max_features, max_leaf_nodes,
-    # min_impurity_decrease, min_impurity_split, boot_strap, oob_score
-    "Random Forest": RandomForestClassifier()
-}
+    y_true, y_pred = ds.test_output, classifier.predict(ds.test_var)
+    score = score_f(y_true, y_pred)
 
+    print(score)
+    print("mejores parametros: " + str(classifier.best_params_))
 
+    return classifier, score
 
 # Classification data
-ds = get_dataset(small=True)
+ds = get_dataset(small=False)
 ds.preprocess()
 
 
-#compare_models(ds, svm_models)
+# Neural network
 
-
-# Neural networks
-
-
-# Boosting
-
-
-# Random forest
-
-
-nn_clf = Pipeline(steps=[('pca', PCA()),
-                         ('mlp', MLPClassifier())])
-#nn_clf = MLPClassifier()
+nn_clf = Pipeline(steps=[('pca', PCA(svd_solver='full')),
+                         ('poly', PolynomialFeatures()),
+                         ('mlp', MLPClassifier(solver='adam'))])
 nn_parameters = {
-    'pca__n_components': [30, 60, 90, 120, 150],
-    #'mlp__hidden_layer_sizes': [(50,50,50), (50,100,50), (100,)],
-    #'mlp__activation': ['tanh', 'relu'],
-    #'mlp__solver': ['sgd', 'adam'],
-    'mlp__alpha': [0.0001, 0.05]
-    #'mlp__learning_rate': ['constant','adaptive'],
+    'pca__n_components': [.80, .90, .95],
+    'poly__degree': [1, 2, 3],
+    'mlp__hidden_layer_sizes': [(100,), (100, 100), (100, 100, 100)],
+    'mlp__activation': ['tanh', 'relu'],
+    'mlp__alpha': np.logspace(-4, -1, num=5, base=10),
+    'mlp__learning_rate': ['constant', 'adaptive']
 }
 
+# 2:58
+# nn_clf = RandomizedSearchCV(nn_clf, nn_parameters, n_jobs=-1, cv=5, scoring=scorer, n_iter=1)
+# nn_clf.fit(ds.train_var, ds.train_output)
+#
+# y_true, y_pred = ds.test_output, nn_clf.predict(ds.test_var)
+# score = score_f(y_true, y_pred)
+# print(score)
+# print("mejores parametros: " + str(nn_clf.best_params_))
 
 
+# Linear regression
 
-nn_clf = GridSearchCV(nn_clf, nn_parameters, n_jobs=-1, cv=5, scoring=scorer)
-nn_clf.fit(ds.train_var, ds.train_output)
+pct_clf = Pipeline(steps=[('pca', PCA(svd_solver='full')),
+                          ('poly', PolynomialFeatures(2)),
+                          ('pct', Perceptron(max_iter=10,
+                                             tol=.001,
+                                             n_jobs=-1))])
+pct_parameters = {
+    'pca__n_components': [.80, .90, .95],
+    'pct__penalty': ['l1', 'l2', 'elasticnet'],
+    'pct__alpha': np.logspace(-5, -1, num=5, base=10),
+}
 
-# Ver score
+# # 2:23
+pct_clf = RandomizedSearchCV(pct_clf, pct_parameters,
+                             cv=5, scoring=scorer, n_iter=1)
 
-y_true, y_pred = ds.test_output , nn_clf.predict(ds.test_var)
+pct_clf.fit(ds.train_var, ds.train_output)
+
+y_true, y_pred = ds.test_output, pct_clf.predict(ds.test_var)
 score = score_f(y_true, y_pred)
-print("mejores parametros: " + str(nn_clf.best_params_))
+print(score)
+print("mejores parametros: " + str(pct_clf.best_params_))
 
+# tune_parameters(pct_clf, pct_parameters)
+
+# AdaBoost
+
+ab_clf = Pipeline(steps=[('pca', PCA(svd_solver='full')),
+                         ('poly', PolynomialFeatures(2)),
+                         ('ab', AdaBoostClassifier())]) #TODO: base estimator
+                                                        #TODO: SAMME.R vs SAMME
+
+ab_parameters = {
+    'pca__n_components': [.80, .90, .95],
+    'ab__learning_rate': np.logspace(-2, 2, num=5, base=10)
+}
+
+# # 3:22
+# ab_clf = RandomizedSearchCV(ab_clf, ab_parameters,
+#                             cv=5, scoring=scorer, n_iter=1)
+#
+# ab_clf.fit(ds.train_var, ds.train_output)
+#
+# y_true, y_pred = ds.test_output, ab_clf.predict(ds.test_var)
+# score = score_f(y_true, y_pred)
+# print(score)
+# print("mejores parametros: " + str(ab_clf.best_params_))
+
+
+# Random Forest
+
+rf_clf = Pipeline(steps=[('pca', PCA(svd_solver='full')),
+                         ('poly', PolynomialFeatures(2)),
+                         ('rf', RandomForestClassifier(
+
+                            max_features='sqrt'
+                         ))])
+
+rf_parameters = {
+    'pca__n_components': [.80, .90, .95],
+    'rf__n_estimators': [10, 40, 160],
+    'rf__criterion': ['gini', 'entropy']
+}
+
+# 4-5 min. de media
+# rf_clf = RandomizedSearchCV(rf_clf, rf_parameters,
+#                             cv=5, scoring=scorer, n_iter=1)
+#
+# rf_clf.fit(ds.train_var, ds.train_output)
+#
+# y_true, y_pred = ds.test_output, rf_clf.predict(ds.test_var)
+# score = score_f(y_true, y_pred)
+# print(score)
+# print("mejores parametros: " + str(rf_clf.best_params_))
+
+models = {
+    "SVM": pct_clf,
+    "Neural network": nn_clf,
+    "AdaBoost": ab_clf,
+    "Random Forest": rf_clf
+}
