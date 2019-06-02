@@ -100,11 +100,10 @@ ds.preprocess()
 # Neural network
 
 nn_clf = Pipeline(steps=[('pca', PCA(svd_solver='full')),
-                         ('poly', PolynomialFeatures()),
+                         ('poly', PolynomialFeatures(2)),
                          ('mlp', MLPClassifier(solver='adam'))])
 nn_parameters = {
     'pca__n_components': [.80, .90, .95],
-    'poly__degree': [1, 2, 3],
     'mlp__hidden_layer_sizes': [(100,), (100, 100), (100, 100, 100)],
     'mlp__activation': ['tanh', 'relu'],
     'mlp__alpha': np.logspace(-4, -1, num=5, base=10),
