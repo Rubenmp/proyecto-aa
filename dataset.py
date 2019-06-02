@@ -3,15 +3,13 @@
 #############
 
 import csv
-import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 from sklearn.impute import SimpleImputer
 from sklearn.ensemble import IsolationForest
-
-import sklearn
+from sklearn.utils.class_weight import compute_sample_weight
 
 
 class DataSet:
@@ -27,6 +25,7 @@ class DataSet:
         """
         self.train_var, self.train_output = None, None
         self.test_var, self.test_output = None, None
+        self.var_names = None
 
         self.read_train_test(train_f, test_f)
 
@@ -35,12 +34,11 @@ class DataSet:
         """
             Read training and test data from files
         """
-        self.train_var, self.train_output = DataSet.read_file_data(train_f)
-        self.test_var, self.test_output = DataSet.read_file_data(test_f)
+        self.train_var, self.train_output = self.read_file_data(train_f)
+        self.test_var, self.test_output = self.read_file_data(test_f)
 
 
-    @staticmethod
-    def read_file_data(file):
+    def read_file_data(self, file):
         """
             Given a file returns two dataframes, one with its
             variables and another one with outputs
@@ -57,8 +55,7 @@ class DataSet:
         output = np.fromiter(map(lambda x: -1 if x == "neg" else 1,
                                  reader[1:, 0]), dtype=np.int)
 
-        variables = pd.DataFrame(variables)
-        variables.columns = var_names
+        self.var_names = var_names
 
         csv_file.close()
 
@@ -77,9 +74,6 @@ class DataSet:
 
         self.__remove_outliers()
 
-        
-        
-        # Normalization
         if normalization:
             self.__normalize()
 
@@ -91,8 +85,8 @@ class DataSet:
         # TODO: discutir estrategia de imputación
         imp = SimpleImputer()
         imp.fit(self.train_var)
-        self.train_var = pd.DataFrame(imp.transform(self.train_var))
-        self.test_var = pd.DataFrame(imp.transform(self.test_var))
+        self.train_var = imp.transform(self.train_var)
+        self.test_var = imp.transform(self.test_var)
 
 
     def __remove_outliers(self, show_evolution=False):
@@ -120,8 +114,8 @@ class DataSet:
         random_indexes = [i for i in range(len(classes))]
         np.random.shuffle(random_indexes)
 
-        self.train_var    = pd.DataFrame(data[random_indexes])
-        self.train_output = pd.DataFrame(classes[random_indexes])
+        self.train_var    = data[random_indexes]
+        self.train_output = classes[random_indexes]
 
         if show_evolution:
             print("After. Train shape " + str(self.train_var.shape) + ", outputs " + str(len(self.train_output)))
@@ -139,7 +133,7 @@ class DataSet:
         # new version, if we do not set these parameters it would
         # be a deprecated version of IsolationForest
         outliers_IF = IsolationForest(behaviour="new", contamination="auto")
-        data_with_obj_class = data.values[classes == obj_class]
+        data_with_obj_class = data[classes == obj_class]
         outliers_IF.fit(data_with_obj_class)
 
         # Inliers are labeled 1, while outliers are labeled -1.
@@ -158,29 +152,16 @@ class DataSet:
         # Transform data so that it has mean 0 and s.d. 1
         sc = StandardScaler()
         sc.fit(self.train_var)
-        self.train_var = pd.DataFrame(sc.transform(self.train_var))
-        self.test_var = pd.DataFrame(sc.transform(self.test_var))
-
-
-    def increase_var_pol(self, degree=1, interaction_only=True):
-        """ Transform dimensionaliy of our dataset
-            Suppose variables [a,b]
-            If we choose degree=2 and interaction_only=False it will change to: [1, a, b, a^2, ab, b^2]
-            If we choose degree=2 and interaction_only=True it will change to: [1, a, b, ab]
-        """
-        poly = PolynomialFeatures(degree, interaction_only=interaction_only)
-        print("Aumento de dimensionalidad: " + str(self.train_var.shape[1]) + " -> ", end=" ")
-        self.train_var = pd.DataFrame(poly.fit_transform(self.train_var))
-        self.test_var = pd.DataFrame(poly.fit_transform(self.test_var))
-        print(self.train_var.shape[1])
+        self.train_var = sc.transform(self.train_var)
+        self.test_var  = sc.transform(self.test_var)
 
 
     # Getter
     def get_sample_weight(self, train=True):
         if train:
-            return sklearn.utils.class_weight.compute_sample_weight(DataSet.WEIGHTS_DIC, self.train_output)
+            return compute_sample_weight(DataSet.WEIGHTS_DIC, self.train_output)
         else:
-            return sklearn.utils.class_weight.compute_sample_weight(DataSet.WEIGHTS_DIC, self.test_output)
+            return compute_sample_weight(DataSet.WEIGHTS_DIC, self.test_output)
 
 
     def get_sample_weight_train(self):
@@ -192,15 +173,6 @@ class DataSet:
 
 
     # Plotting functions
-
-    def plot(self, i, j):
-        """
-            Plot train variables (i,j)
-        """
-        plt.scatter(self.train_var.iloc[:,i], self.train_var.iloc[:,j])
-        plt.show()
-
-
     @staticmethod
     def plot_boxplot_with_outliers(data, index, file=None):
         import seaborn as sns
@@ -213,7 +185,7 @@ class DataSet:
 
     def nan_histogram(self):
         xs = sum(np.array(list(map(lambda x: np.isnan(x),
-                                   self.train_var.values)))) \
+                                   self.train_var)))) \
              / len(self.train_var)
         xs.sort()
         plt.hist(xs, 20, density=False)
@@ -230,5 +202,6 @@ def get_dataset(small=False):
         train_f, test_f = "reduced_training_set.csv", "reduced_test_set.csv"
     else:
         train_f, test_f = "aps_failure_training_set.csv", "aps_failure_test_set.csv" 
-    ds = DataSet(f"{data_folder}/{train_f}", f"{data_folder}/{test_f}") 
+    ds = DataSet(f"{data_folder}/{train_f}", f"{data_folder}/{test_f}")
+
     return ds
