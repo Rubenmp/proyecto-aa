@@ -24,6 +24,17 @@ random_state = 0
 print("Problema de clasificación APS Failure at Scania Trucks Data Set\n")
 
 
+def score_f(y_true, y_pred):
+    """
+        Score function for hyperparameter optimization
+    """
+    w_dic = DataSet.weights_dic
+    sample_weight=compute_sample_weight(w_dic, y_true)
+    return accuracy_score(y_true, y_pred, sample_weight=sample_weight)
+
+scorer = make_scorer(score_f)
+
+
 def validate(dataset, model):
     X = dataset.train_var.values
     y = dataset.train_output
@@ -118,15 +129,7 @@ nn_parameters = {
 }
 
 
-def score_f(y_true, y_pred):
-    """
-        Score function for hyperparameter optimization
-    """
-    w_dic = DataSet.weights_dic
-    sample_weight=compute_sample_weight(w_dic, y_true)
-    return accuracy_score(y_true, y_pred, sample_weight=sample_weight)
 
-scorer = make_scorer(score_f)
 
 nn_clf = GridSearchCV(nn_clf, nn_parameters, n_jobs=-1, cv=5, scoring=scorer)
 nn_clf.fit(ds.train_var, ds.train_output)
