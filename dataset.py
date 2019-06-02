@@ -9,13 +9,17 @@ import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 from sklearn.impute import SimpleImputer
+from sklearn.ensemble import IsolationForest
+
 import sklearn
 
 
 class DataSet:
-    pos_class_weight = 500
-    neg_class_weight = 10
-    weights_dic = {1: pos_class_weight, -1: neg_class_weight}
+    POS_CLASS_WEIGHT = 500
+    NEG_CLASS_WEIGHT = 10
+    POSITIVE_CLASS = 1
+    NEGATIVE_CLASS = -1
+    WEIGHTS_DIC = {POSITIVE_CLASS: POS_CLASS_WEIGHT, NEGATIVE_CLASS: NEG_CLASS_WEIGHT}
     
     def __init__(self, train_f, test_f):
         """
@@ -31,8 +35,8 @@ class DataSet:
         """
             Read training and test data from files
         """
-        self.train_var, self.train_output = self.read_file_data(train_f)
-        self.test_var, self.test_output = self.read_file_data(test_f)
+        self.train_var, self.train_output = DataSet.read_file_data(train_f)
+        self.test_var, self.test_output = DataSet.read_file_data(test_f)
 
 
     @staticmethod
@@ -45,12 +49,16 @@ class DataSet:
         reader = list(csv.reader(csv_file))[20:]
         reader = np.array(reader)
 
+        var_names = [l for l in reader[0, 1:] ]
+
         variables = np.array(
             list(list(map(lambda x: np.nan if x == 'na' else np.float(x), l))
                  for l in reader[1:, 1:]))
         output = np.fromiter(map(lambda x: -1 if x == "neg" else 1,
                                  reader[1:, 0]), dtype=np.int)
+
         variables = pd.DataFrame(variables)
+        variables.columns = var_names
 
         csv_file.close()
 
@@ -63,17 +71,17 @@ class DataSet:
         """
         print("Preprocesamiento de datos para clasificación")
 
-        #print(self.train_var)
-
         # Impute missing values
         # TODO: si la estrategia de imputación es la de la media, se puede simplemente poner los NaN a 0 tras normalizar
         self.__impute_missing_values()
 
-        # Normalization
-        self.__normalize()
+        self.__remove_outliers()
 
-        # PCA
-        #self.__pca(10)  # TODO: discutir número de componentes
+        
+        
+        # Normalization
+        if normalization:
+            self.__normalize()
 
 
     def __impute_missing_values(self):
@@ -85,6 +93,60 @@ class DataSet:
         imp.fit(self.train_var)
         self.train_var = pd.DataFrame(imp.transform(self.train_var))
         self.test_var = pd.DataFrame(imp.transform(self.test_var))
+
+
+    def __remove_outliers(self, show_evolution=False):
+        """
+            Remove outliers from data with class obj_class
+            If outliers are removed from data not taking into
+            account obj_class unbalanced classes could be considered
+            as outliers 
+        """
+        
+        if show_evolution:
+            print("Before. Train shape " + str(self.train_var.shape) + ", outputs " + str(len(self.train_output)))
+        
+        # Remove outliers with negative class
+        neg_class_data = DataSet.__remove_outliers_by_class(self.train_var, self.train_output, DataSet.NEGATIVE_CLASS)
+        neg_classes = [DataSet.NEGATIVE_CLASS for _ in neg_class_data]
+
+        pos_class_data = DataSet.__remove_outliers_by_class(self.train_var, self.train_output, DataSet.POSITIVE_CLASS)
+        pos_classes = [DataSet.POSITIVE_CLASS for _ in pos_class_data]
+
+        data    = np.concatenate((neg_class_data, pos_class_data))
+        classes = np.concatenate((neg_classes, pos_classes))
+
+        # Shuffle data
+        random_indexes = [i for i in range(len(classes))]
+        np.random.shuffle(random_indexes)
+
+        self.train_var    = pd.DataFrame(data[random_indexes])
+        self.train_output = pd.DataFrame(classes[random_indexes])
+
+        if show_evolution:
+            print("After. Train shape " + str(self.train_var.shape) + ", outputs " + str(len(self.train_output)))
+
+
+    @staticmethod
+    def __remove_outliers_by_class(data, classes, obj_class):
+        """
+            Remove outliers from data with class obj_class
+            If outliers are removed from data not taking into
+            account obj_class unbalanced classes could be considered
+            as outliers 
+        """
+        # Parameters of Isolation Forest are default parameters of 
+        # new version, if we do not set these parameters it would
+        # be a deprecated version of IsolationForest
+        outliers_IF = IsolationForest(behaviour="new", contamination="auto")
+        data_with_obj_class = data.values[classes == obj_class]
+        outliers_IF.fit(data_with_obj_class)
+
+        # Inliers are labeled 1, while outliers are labeled -1.
+        y_pred   = outliers_IF.predict(data_with_obj_class)
+        new_data = data_with_obj_class[y_pred != -1]
+
+        return new_data
 
 
     def __normalize(self):
@@ -100,35 +162,9 @@ class DataSet:
         self.test_var = pd.DataFrame(sc.transform(self.test_var))
 
 
-    def __pca(self, n_components):
-        #print(self.train_var.shape)
-        pca = PCA(n_components=n_components)
-        pca.fit(self.train_var)
-        self.train_var = pd.DataFrame(pca.transform(self.train_var))
-        self.test_var = pd.DataFrame(pca.transform(self.test_var))
-        #print(self.train_var.shape)
-
-
-    def remove_indexes(self, data, idx):
-        """
-            Given a dataframe it returns a new dataframe with 
-            columns idx removed
-        """
-
-        idx = set(idx)
-        new_matrix = []
-        n = len(data.columns)
-        for column in range(n):
-            if column not in idx:
-                new_matrix.append(data.iloc[:,column])
-
-        new_matrix = pd.DataFrame(new_matrix).T
-        return new_matrix
-
-
     def increase_var_pol(self, degree=1, interaction_only=True):
         """ Transform dimensionaliy of our dataset
-        Suppose variables [a,b] 
+            Suppose variables [a,b]
             If we choose degree=2 and interaction_only=False it will change to: [1, a, b, a^2, ab, b^2]
             If we choose degree=2 and interaction_only=True it will change to: [1, a, b, ab]
         """
@@ -142,9 +178,9 @@ class DataSet:
     # Getter
     def get_sample_weight(self, train=True):
         if train:
-            return sklearn.utils.class_weight.compute_sample_weight(DataSet.weights_dic, self.train_output)
+            return sklearn.utils.class_weight.compute_sample_weight(DataSet.WEIGHTS_DIC, self.train_output)
         else:
-            return sklearn.utils.class_weight.compute_sample_weight(DataSet.weights_dic, self.test_output)
+            return sklearn.utils.class_weight.compute_sample_weight(DataSet.WEIGHTS_DIC, self.test_output)
 
 
     def get_sample_weight_train(self):
@@ -162,6 +198,16 @@ class DataSet:
             Plot train variables (i,j)
         """
         plt.scatter(self.train_var.iloc[:,i], self.train_var.iloc[:,j])
+        plt.show()
+
+
+    @staticmethod
+    def plot_boxplot_with_outliers(data, index, file=None):
+        import seaborn as sns
+        sns.boxplot(x=data[index])
+        plt.title(f'Boxplot de la variable aa_000')
+        if file != None:
+            plt.savefig(file)
         plt.show()
 
 

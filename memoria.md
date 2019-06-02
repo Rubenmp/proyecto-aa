@@ -43,7 +43,31 @@ Optamos por una estrategia de imputación de valores desconocidos. Esta estrateg
 
 TODO: discutir cuál y por qué
 
-## Outliers
+
+## Tratamiento de outliers
+
+Los datos a veces pueden tener errores, por ello es deseable hacer un tratamiento previo de los datos problemáticos. Hay dos tipos principales de análisis de outliers, univariable y multivariable.
+Haciendo un boxplot de la primera variable del conjunto de entrenamiento podemos apreciar los candidatos a outliers (rombos de la imagen) de la clase positiva.
+
+![](./imgs/boxplot_aa_000.png)
+
+En dicho gráfico se han calculado los posibles outliers respecto dicha variable y se ha realizado el boxplot sin ellos, para poder apreciar la desviación de estos candidatos a outliers frente al resto.
+Realmente no son demasiados outliers dentro de los $1.000$ ejemplos positivos, pero son suficientes para que merezca la pena tenerlos en cuenta, ya que podrían bajar la calidad del conjunto de entrenamiento.
+
+Cuando se tratan los outliers en problemas de clasificación hay que tener cuidado, no se deben aplicar directamente las técnicas de detección de outliers sin tener en cuenta la clase de cada elemento.
+Si se hace el tratamiento de outliers ignorando la clase en un conjunto muy desbalanceado se corre el riesgo de que la mayoría de elementos de la clase minoritaria sean clasificados como outliers. En nuestro conjunto de entrenamiento si se aplica detección de outliers sin considerar la clase obtenemos $2785$ outliers (de un total de $60.000$ elementos), $859$ de ellos tienen clase positiva (de un total de 1.000 casos positivos), estaríamos eliminando la mayoría de elementos de la clase positiva. Por este motivo es deseable buscar los outliers entre los casos positivos y luego entre los negativos de forma independiente.
+
+TODO: citar justificación separar tratamiento de outliers por clases
+https://idus.us.es/xmlui/bitstream/handle/11441/42708/Deletin%20or%20keeping.pdf?sequence=1&isAllowed=y
+
+## Isolation Forests
+El algoritmo usado para la detección de outliers es Isolation Forests.
+
+TODO: explicar algoritmo
+
+Tras la eliminación de outliers el gráfico anterior quedaría como sigue
+![](./imgs/new_boxplot_aa_000.png)
+Puede apreciarse que se han eliminado bastantes de los candidatos a outliers que aparecían previamente
 
 
 ## Normalización de datos
@@ -53,7 +77,7 @@ TODO: discutir cuál y por qué
 
 Existen diferentes técnicas para reducir la dimensionalidad de los datos. Se podrían eliminar las variables con alta correlación o varianza muy baja. Otra técnica más adecuada es PCA (Principal Component Analysis), que considera nuevas variables (combinaciones lineales de las originales) no correlacionadas llamadas componentes principales, ordenadas por la cantidad de varianza original que describen. Posteriormente, se elige el porcentaje de varianza que se quiere poder explicar y se eliminan las componentes principales que no sean relevantes, por ello se trata de una técnica de reducción de la dimensionalidad.
 
-Una ventaja de esta técnica es que ayuda a reducir el sobreajuste, al quedarse con la información esencial del problema. La desventaja de este análisis es que de que se pierde interpretabilidad de los datos al optimizar con combinaciones lineales de los mismos. En este caso no nos importa esta desventaja ya que las variables iniciales estaban ya anonimizadas.
+Una ventaja de esta técnica es que ayuda a reducir el sobreajuste, al quedarse con la información esencial del problema. La desventaja de este análisis es que de que se pierde interpretabilidad de los datos al optimizar con combinaciones lineales de los mismos. En este caso no nos importa esta desventaja ya que las variables iniciales estaban ya anonimizadas. No existe un porcentaje de varianza perfecto con el que determinar el número de componentes principales con el que debemos quedarnos, por ello se probará con diferentes valores en validación cruzada.
 
 
 # Selección de clases de funciones
