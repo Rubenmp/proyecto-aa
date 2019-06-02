@@ -20,8 +20,6 @@ from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
 from sklearn.utils.class_weight import compute_sample_weight
 
 
-random_state = 0
-
 print("Problema de clasificación APS Failure at Scania Trucks Data Set\n")
 
 
@@ -33,6 +31,7 @@ def score_f(y_true, y_pred):
     sample_weight=compute_sample_weight(w_dic, y_true)
     return accuracy_score(y_true, y_pred, sample_weight=sample_weight)
 
+# Scorer which takes into account costs of false positives and false negatives
 scorer = make_scorer(score_f)
 
 
@@ -79,21 +78,24 @@ def compare_models(dataset, models):
     return max_score_model, models[max_score_model]
 
 
-def tune_parameters(classifier, parameters):
-    classifier = RandomizedSearchCV(classifier, parameters, n_jobs=-1, cv=5,
-                                    scoring=scorer, n_iter=1)
-    classifier.fit(ds.train_var, ds.train_output)
 
-    y_true, y_pred = ds.test_output, classifier.predict(ds.test_var)
+def tune_parameters(classifier, parameters, dataset, scorer, n_iter=10, verbose=False):
+    verbosity = 2 if verbose else 0
+    classifier = RandomizedSearchCV(classifier, parameters, n_jobs=-1, cv=5,
+                                    scoring=scorer, n_iter=n_iter, verbose=verbosity)
+    classifier.fit(dataset.train_var, dataset.train_output)
+
+    y_true, y_pred = dataset.test_output, classifier.predict(dataset.test_var)
     score = score_f(y_true, y_pred)
 
-    print(score)
-    print("mejores parametros: " + str(classifier.best_params_))
+    print(f"Mejores parametros ({score}): {classifier.best_params_}")
 
     return classifier, score
 
+
+
 # Classification data
-ds = get_dataset(small=False)
+ds = get_dataset(small=True)
 ds.preprocess()
 
 
@@ -111,13 +113,8 @@ nn_parameters = {
 }
 
 # 2:58
-# nn_clf = RandomizedSearchCV(nn_clf, nn_parameters, n_jobs=-1, cv=5, scoring=scorer, n_iter=1)
-# nn_clf.fit(ds.train_var, ds.train_output)
-#
-# y_true, y_pred = ds.test_output, nn_clf.predict(ds.test_var)
-# score = score_f(y_true, y_pred)
-# print(score)
-# print("mejores parametros: " + str(nn_clf.best_params_))
+tune_parameters(nn_clf, nn_parameters, ds, scorer, verbose=True)
+
 
 
 # Linear regression
@@ -134,17 +131,9 @@ pct_parameters = {
 }
 
 # # 2:23
-pct_clf = RandomizedSearchCV(pct_clf, pct_parameters,
-                             cv=5, scoring=scorer, n_iter=1)
+tune_parameters(pct_clf, pct_parameters, ds, scorer, verbose=True)
 
-pct_clf.fit(ds.train_var, ds.train_output)
 
-y_true, y_pred = ds.test_output, pct_clf.predict(ds.test_var)
-score = score_f(y_true, y_pred)
-print(score)
-print("mejores parametros: " + str(pct_clf.best_params_))
-
-# tune_parameters(pct_clf, pct_parameters)
 
 # AdaBoost
 
@@ -159,15 +148,8 @@ ab_parameters = {
 }
 
 # # 3:22
-# ab_clf = RandomizedSearchCV(ab_clf, ab_parameters,
-#                             cv=5, scoring=scorer, n_iter=1)
-#
-# ab_clf.fit(ds.train_var, ds.train_output)
-#
-# y_true, y_pred = ds.test_output, ab_clf.predict(ds.test_var)
-# score = score_f(y_true, y_pred)
-# print(score)
-# print("mejores parametros: " + str(ab_clf.best_params_))
+tune_parameters(ab_clf, ab_parameters, ds, scorer, verbose=True)
+
 
 
 # Random Forest
@@ -186,15 +168,8 @@ rf_parameters = {
 }
 
 # 4-5 min. de media
-# rf_clf = RandomizedSearchCV(rf_clf, rf_parameters,
-#                             cv=5, scoring=scorer, n_iter=1)
-#
-# rf_clf.fit(ds.train_var, ds.train_output)
-#
-# y_true, y_pred = ds.test_output, rf_clf.predict(ds.test_var)
-# score = score_f(y_true, y_pred)
-# print(score)
-# print("mejores parametros: " + str(rf_clf.best_params_))
+tune_parameters(rf_clf, rf_parameters, ds, scorer, verbose=True)
+
 
 models = {
     "SVM": pct_clf,
