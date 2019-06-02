@@ -10,7 +10,9 @@ Autores:
 
 from dataset import *
 from sklearn.model_selection import KFold
-import sklearn
+from sklearn.neural_network import MLPClassifier
+from sklearn.svm import SVC
+from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
 
 import pandas as pd
 
@@ -36,7 +38,8 @@ def validate(dataset, model):
 
         model.fit(X_train, y_train)
 
-        score += model.score(X_test, y_test, dataset.get_sample_weight_train()[test_idx])
+        score += model.score(X_test, y_test,
+                             dataset.get_sample_weight_train()[test_idx])
         
     return score/n_splits
 
@@ -60,9 +63,25 @@ def compare_models(dataset, models):
 
     return max_score_model, models[max_score_model]
 
+
 svm_models = {
-    "SVM con kernel lineal": sklearn.svm.SVC(kernel='linear', gamma='scale'),
-    "SVM con kernel polinómico": sklearn.svm.SVC(kernel='poly', gamma='scale')
+    "SVM con kernel polinómico": SVC(kernel='poly', gamma='scale'),
+    "SVM con kernel RBF": SVC(kernel='rbf', gamma='scale')
+}
+
+models = {
+    # Parámetros: C, kernel, degree, gamma, tol?
+    "SVM": SVC(),
+    # Parámetros: hidden_layer_sizes, activation, solver, alpha, batch_size?*,
+    # learning_rate*, learning_rate_init*, power_t*, max_iter?, tol?, momentum*
+    "Neural network": MLPClassifier(),
+    # base_estimator, n_estimators, learning_rate
+    # TODO: usa funciones stamp?
+    "AdaBoost": AdaBoostClassifier(),
+    # n_estimators, criterion, max_depth, min_samples_split, min_samples_leaf,
+    # min_weight_fraction_leaf, max_features, max_leaf_nodes,
+    # min_impurity_decrease, min_impurity_split, boot_strap, oob_score
+    "Random Forest": RandomForestClassifier()
 }
 
 
@@ -73,7 +92,7 @@ ds.preprocess()
 compare_models(ds, svm_models)
 
 
-# Neural nets
+# Neural networks
 
 
 # Boosting
