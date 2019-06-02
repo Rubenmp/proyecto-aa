@@ -9,9 +9,11 @@ Autores:
 """
 
 from dataset import *
+from sklearn.decomposition import PCA
 from sklearn.metrics import make_scorer, accuracy_score
 from sklearn.model_selection import KFold, GridSearchCV
 from sklearn.neural_network import MLPClassifier
+from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC
 from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
 from sklearn.utils.class_weight import compute_sample_weight
@@ -103,13 +105,16 @@ ds.preprocess()
 # Random forest
 
 
-nn_clf = MLPClassifier(max_iter=100)
+nn_clf = Pipeline(steps=[('pca', PCA()),
+                         ('mlp', MLPClassifier())])
+#nn_clf = MLPClassifier()
 nn_parameters = {
-    #'hidden_layer_sizes': [(50,50,50), (50,100,50), (100,)],
-    #'activation': ['tanh', 'relu'],
-    #'solver': ['sgd', 'adam'],
-    'alpha': [0.0001, 0.05],
-    #'learning_rate': ['constant','adaptive'],
+    'pca__n_components': [30, 60, 90, 120, 150],
+    #'mlp__hidden_layer_sizes': [(50,50,50), (50,100,50), (100,)],
+    #'mlp__activation': ['tanh', 'relu'],
+    #'mlp__solver': ['sgd', 'adam'],
+    'mlp__alpha': [0.0001, 0.05]
+    #'mlp__learning_rate': ['constant','adaptive'],
 }
 
 
@@ -123,8 +128,8 @@ def score_f(y_true, y_pred):
 
 scorer = make_scorer(score_f, greater_is_better=True)
 
-clf = GridSearchCV(nn_clf, nn_parameters, n_jobs=-1, cv=3, scoring=scorer)
-clf.fit(ds.train_var, ds.train_output)
+nn_clf = GridSearchCV(nn_clf, nn_parameters, n_jobs=-1, cv=5, scoring=scorer)
+nn_clf.fit(ds.train_var, ds.train_output)
 
 # Ver score
 

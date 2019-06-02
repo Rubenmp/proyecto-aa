@@ -31,7 +31,7 @@ Trataremos de diseñar un modelo para este problema de cada uno de los siguiente
 
 ## Tratamiento de valores desconocidos
 
-El principal problema a resolver en el preprocesado de datos es la cantidad de valores desconocidos en el conjunto. Si bien algunos modelos como los basados en árboles de decisión pueder trabajar con este tipo de valores, en otros modelos como los lineales deben conocerse los valores de todas las variables.
+El principal problema a resolver en el preprocesado de datos es la cantidad de valores desconocidos en el conjunto.
 
 El 99% de los ejemplos tienen algún valor desconocido, de modo que no es viable eliminar los ejemplos con valores desconocidos.
 

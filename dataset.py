@@ -73,7 +73,7 @@ class DataSet:
         self.__normalize()
 
         # PCA
-        self.__pca(10)  # TODO: discutir número de componentes
+        #self.__pca(10)  # TODO: discutir número de componentes
 
 
     def __impute_missing_values(self):
