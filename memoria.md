@@ -31,7 +31,7 @@ Trataremos de diseñar un modelo para este problema de cada uno de los siguiente
 
 ## Tratamiento de valores desconocidos
 
-El principal problema a resolver en el preprocesado de datos es la cantidad de valores desconocidos en el conjunto.
+El principal problema a resolver en el preprocesado de datos es la cantidad de valores desconocidos en el conjunto. Si bien algunos modelos como los basados en árboles de decisión pueder trabajar con este tipo de valores, en otros modelos como los lineales deben conocerse los valores de todas las variables.
 
 El 99% de los ejemplos tienen algún valor desconocido, de modo que no es viable eliminar los ejemplos con valores desconocidos.
 
@@ -39,7 +39,7 @@ Es razonable plantearse la posibilidad de eliminar variables con valores descono
 
 ![](./imgs/histograma_nan.png)
 
-Optamos por una estrategia de imputación de valores desconocidos. Esta estrategia consiste en asignar valores donde falten en función del resto de valores del conjunto de datos.
+Optamos por una estrategia de imputación de valores desconocidos. Esta estrategia consiste en asignar valores donde falten en función del resto de valores del conjunto de datos. Esto se puede hacer calculando los valores en función de los valores de la misma variable para el resto de ejemplos (imputación univariante) o en función de los valores del resto de variables de ese ejemplo (imputación multivariante). La imputación univariante se hace con algún estadístico de los valores de cada variable, como la media, la moda o la mediana.
 
 TODO: discutir cuál y por qué
 
