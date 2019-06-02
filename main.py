@@ -28,7 +28,7 @@ def score_f(y_true, y_pred):
     """
         Score function for hyperparameter optimization
     """
-    w_dic = DataSet.weights_dic
+    w_dic = DataSet.WEIGHTS_DIC
     sample_weight=compute_sample_weight(w_dic, y_true)
     return accuracy_score(y_true, y_pred, sample_weight=sample_weight)
 
