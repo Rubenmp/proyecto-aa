@@ -101,11 +101,9 @@ models = {
 
 
 # Classification data
-ds = get_dataset(small=True)
+ds = get_dataset(small=False)
 ds.preprocess()
 
-
-#compare_models(ds, svm_models)
 
 
 # Neural networks
