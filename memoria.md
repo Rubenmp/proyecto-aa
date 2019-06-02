@@ -39,7 +39,7 @@ Es razonable plantearse la posibilidad de eliminar variables con valores descono
 
 ![](./imgs/histograma_nan.png)
 
-Optamos por una estrategia de imputación de valores desconocidos. Esta estrategia consiste en asignar valores donde falten en función del resto de valores del conjunto de datos.
+Optamos por una estrategia de imputación de valores desconocidos.
 
 TODO: discutir cuál y por qué
 
