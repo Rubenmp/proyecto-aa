@@ -29,6 +29,14 @@ Trataremos de diseñar un modelo para este problema de cada uno de los siguiente
 * Random forest;
 * AdaBoost.
 
+Tras el tratamiento de los NaN en el preprocesamiento de datos se puede visualizar un subconjunto de los datos tras su proyección a dos dimensiones con la técnica t-distributed Stochastic Neighbor Embedding. t-SNE es un método para visualización, para reducir la dimensionalidad es preferible usar análisis de componentes principales.
+TODO: citar
+http://www.jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf
+
+
+![](./imgs/scatter_2d_exact.png){ width=85% }
+
+
 # Preprocesado de datos
 
 ## Tratamiento de valores desconocidos
@@ -61,17 +69,25 @@ Por este motivo es deseable buscar los outliers entre los casos positivos y lueg
 TODO: citar justificación separar tratamiento de outliers por clases
 https://idus.us.es/xmlui/bitstream/handle/11441/42708/Deletin%20or%20keeping.pdf?sequence=1&isAllowed=y
 
+
 ### Isolation Forests
 El algoritmo usado para la detección de outliers es Isolation Forests.
+Este algoritmo combina diferentes árboles de decisión de profundidad uno. En cada etapa del algoritmo se selecciona una característica al azar y un valor aleatorio entre el mínimo y máximo de dicha característica. Este proceso se repite varias etapas, la idea básica es que los outliers en cada variable tendrán valores atípicos, por ello es más probable que queden a un lado de dicho valor elegido al azar. Este proceso se repite varias veces, la identificación de los outliers se basa en que para identificar a un punto que no lo es se necesitará mayor cantidad de particiones.
 
-TODO: explicar algoritmo
 
+![](./imgs/isolation_forest.png){ width=85% }
+TODO: citar imagen
+https://cs.nju.edu.cn/zhouzh/zhouzh.files/publication/icdm08b.pdf
+
+
+
+De esta forma podemos visualizar en una variable la evolución de su distribución.
 
 ![](./imgs/boxplot_aa_000.png){ width=50% } ![](./imgs/new_boxplot_aa_000.png){ width=50% }
 
 En el primer gráfico se han calculado los candidatos a outliers respecto a una variable, todo esto dentro del conjunto de entrenamiento y con la clase positiva, aplicar detección de outliers sobre el test no tiene sentido. 
 Se ha realizado el boxplot sin tener en cuenta dichos candidatos y se han añadido después como rombos. 
-En la segunda imagen se han eliminado los outliers usando Isolation Forests multivariable.
+En la segunda imagen se han eliminado los outliers usando Isolation Forests.
 Teniendo en cuenta esta aproximación puede aumentar la calidad del conjunto de entrenamiento.
 
 

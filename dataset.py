@@ -180,7 +180,7 @@ class DataSet:
         label_colors = [colors[label] for label in self.train_output]
 
         # Projection of training data into two dimensions
-        X_embedded = TSNE(n_components=2, random_state=0).fit_transform(self.train_var)
+        X_embedded = TSNE(n_components=3, method='exact', random_state=0).fit_transform(self.train_var)
         var1 = [x[0] for x in X_embedded]
         var2 = [x[1] for x in X_embedded]
 

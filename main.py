@@ -9,6 +9,7 @@ Autores:
 """
 
 from dataset import *
+from imputer import *
 from sklearn.decomposition import PCA
 from sklearn.linear_model import Perceptron
 from sklearn.metrics import make_scorer, accuracy_score
@@ -79,9 +80,9 @@ def compare_models(dataset, models):
 
 
 
-def tune_parameters(classifier, parameters, dataset, scorer, n_iter=10, verbose=False):
+def tune_parameters(classifier, parameters, dataset, scorer, n_iter=5, verbose=False):
     verbosity = 2 if verbose else 0
-    classifier = RandomizedSearchCV(classifier, parameters, n_jobs=-1, cv=5,
+    classifier = RandomizedSearchCV(classifier, parameters, n_jobs=-1, cv=3,
                                     scoring=scorer, n_iter=n_iter, verbose=verbosity)
     classifier.fit(dataset.train_var, dataset.train_output)
 
@@ -99,25 +100,8 @@ ds = get_dataset(small=True)
 ds.preprocess()
 
 
-# Neural network
 
-nn_clf = Pipeline(steps=[('pca', PCA(svd_solver='full')),
-                         ('poly', PolynomialFeatures(2)),
-                         ('mlp', MLPClassifier(solver='adam'))])
-nn_parameters = {
-    'pca__n_components': [.80, .90, .95],
-    'mlp__hidden_layer_sizes': [(100,), (100, 100), (100, 100, 100)],
-    'mlp__activation': ['tanh', 'relu'],
-    'mlp__alpha': np.logspace(-4, -1, num=5, base=10),
-    'mlp__learning_rate': ['constant', 'adaptive']
-}
-
-# 2:58
-tune_parameters(nn_clf, nn_parameters, ds, scorer, verbose=True)
-
-
-
-# Linear regression
+# Perceptrón
 
 pct_clf = Pipeline(steps=[('pca', PCA(svd_solver='full')),
                           ('poly', PolynomialFeatures(2)),
@@ -132,6 +116,27 @@ pct_parameters = {
 
 # # 2:23
 tune_parameters(pct_clf, pct_parameters, ds, scorer, verbose=True)
+
+
+
+
+# Neural network
+
+nn_clf = Pipeline(steps=[('imputer', Imputer()),    
+                         ('pca', PCA(svd_solver='full')),
+                         ('poly', PolynomialFeatures(2)),
+                         ('mlp', MLPClassifier(solver='adam'))])
+nn_parameters = {
+    'imputer__strat': ['mean', 'median'],
+    'pca__n_components': [.80, .90, .95],
+    'mlp__hidden_layer_sizes': [(100,), (100, 100), (100, 100, 100)],
+    'mlp__activation': ['tanh', 'relu'],
+    'mlp__alpha': np.logspace(-4, -1, num=5, base=10),
+    'mlp__learning_rate': ['constant', 'adaptive']
+}
+
+# 2:58
+tune_parameters(nn_clf, nn_parameters, ds, scorer, verbose=True)
 
 
 
