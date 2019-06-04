@@ -124,7 +124,7 @@ nn_parameters = {
 
 # 2:58
 nn_clf, _ = tune_parameters(nn_clf, nn_parameters, ds, scorer, verbose=True)
-save_model(nn_clf, 'perceptron')
+save_model(nn_clf, 'Perceptron')
 
 
 
@@ -142,7 +142,7 @@ ab_parameters = {
 
 # # 3:22
 ab_clf, _ = tune_parameters(ab_clf, ab_parameters, ds, scorer, verbose=True)
-save_model(ab_clf, 'perceptron')
+save_model(ab_clf, 'AdaBoost')
 
 
 
@@ -163,7 +163,7 @@ rf_parameters = {
 
 # 4-5 min. de media
 rf_clf, _ = tune_parameters(rf_clf, rf_parameters, ds, scorer, verbose=True)
-save_model(rf_clf, 'perceptron')
+save_model(rf_clf, 'RandomForest')
 
 
 models = {
