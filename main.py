@@ -13,50 +13,30 @@ from imputer import *
 from sklearn.decomposition import PCA
 from sklearn.linear_model import Perceptron
 from sklearn.metrics import make_scorer, accuracy_score
-from sklearn.model_selection import KFold, RandomizedSearchCV
+from sklearn.model_selection import KFold, RandomizedSearchCV, cross_val_score
 from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
 from sklearn.utils.class_weight import compute_sample_weight
+from sklearn.externals import joblib
 
 
 print("Problema de clasificación APS Failure at Scania Trucks Data Set\n")
+
+
+
 
 
 def score_f(y_true, y_pred):
     """
         Score function for hyperparameter optimization
     """
-    w_dic = DataSet.WEIGHTS_DIC
-    sample_weight=compute_sample_weight(w_dic, y_true)
+    sample_weight = get_sample_weight(y_true)
     return accuracy_score(y_true, y_pred, sample_weight=sample_weight)
 
 # Scorer which takes into account costs of false positives and false negatives
 scorer = make_scorer(score_f)
-
-
-def validate(dataset, model):
-    X = dataset.train_var.values
-    y = dataset.train_output
-
-    n_splits = 5
-    kf = KFold(n_splits=n_splits)
-
-    score = 0
-    for train_idx, test_idx in kf.split(X):
-        # train_idx and test_idx are indexes over
-        # training examples in dataset, test_idx represents
-        # indexes of validation set
-        X_train, X_test = X[train_idx], X[test_idx]
-        y_train, y_test = y[train_idx], y[test_idx]
-
-        model.fit(X_train, y_train)
-
-        score += model.score(X_test, y_test,
-                             dataset.get_sample_weight_train()[test_idx])
-        
-    return score/n_splits
 
 
 def compare_models(dataset, models):
@@ -65,7 +45,7 @@ def compare_models(dataset, models):
     max_score_model = None
 
     for model in models:
-        score = validate(dataset, models[model])
+        score = cross_val_score(models[model], dataset.train_var, dataset.train_output, scoring=scorer, cv=5, n_jobs=-1)
         scores[model] = score
         if score > max_score:
             max_score = score
@@ -94,9 +74,18 @@ def tune_parameters(classifier, parameters, dataset, scorer, n_iter=5, verbose=F
     return classifier, score
 
 
+def save_model(model, name):
+    filename = './models/' + name + '.model'
+    joblib.dump(model, open(filename, 'wb'))
+
+
+def load_model(name):
+    filename = './models/' + name + '.model'
+    return joblib.load(open(filename, 'rb'))
+
 
 # Classification data
-ds = get_dataset(small=True)
+ds = get_aps_dataset(small=True)
 ds.preprocess()
 
 
@@ -115,19 +104,17 @@ pct_parameters = {
 }
 
 # # 2:23
-tune_parameters(pct_clf, pct_parameters, ds, scorer, verbose=True)
-
+pct_clf, _ = tune_parameters(pct_clf, pct_parameters, ds, scorer, n_iter=1 ,verbose=True)
+save_model(pct_clf, 'perceptron')
 
 
 
 # Neural network
 
-nn_clf = Pipeline(steps=[('imputer', Imputer()),    
-                         ('pca', PCA(svd_solver='full')),
+nn_clf = Pipeline(steps=[('pca', PCA(svd_solver='full')),
                          ('poly', PolynomialFeatures(2)),
                          ('mlp', MLPClassifier(solver='adam'))])
 nn_parameters = {
-    'imputer__strat': ['mean', 'median'],
     'pca__n_components': [.80, .90, .95],
     'mlp__hidden_layer_sizes': [(100,), (100, 100), (100, 100, 100)],
     'mlp__activation': ['tanh', 'relu'],
@@ -136,7 +123,8 @@ nn_parameters = {
 }
 
 # 2:58
-tune_parameters(nn_clf, nn_parameters, ds, scorer, verbose=True)
+nn_clf, _ = tune_parameters(nn_clf, nn_parameters, ds, scorer, verbose=True)
+save_model(nn_clf, 'perceptron')
 
 
 
@@ -153,7 +141,8 @@ ab_parameters = {
 }
 
 # # 3:22
-tune_parameters(ab_clf, ab_parameters, ds, scorer, verbose=True)
+ab_clf, _ = tune_parameters(ab_clf, ab_parameters, ds, scorer, verbose=True)
+save_model(ab_clf, 'perceptron')
 
 
 
@@ -173,7 +162,8 @@ rf_parameters = {
 }
 
 # 4-5 min. de media
-tune_parameters(rf_clf, rf_parameters, ds, scorer, verbose=True)
+rf_clf, _ = tune_parameters(rf_clf, rf_parameters, ds, scorer, verbose=True)
+save_model(rf_clf, 'perceptron')
 
 
 models = {

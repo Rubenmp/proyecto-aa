@@ -217,7 +217,12 @@ class DataSet:
         plt.show()
 
 
-def get_dataset(small=False):
+def get_sample_weight(y_true):
+    w_dic = DataSet.WEIGHTS_DIC
+    sample_weight=compute_sample_weight(w_dic, y_true)
+    return sample_weight
+
+def get_aps_dataset(small=False):
     data_folder = "./datos"
     if small:
         train_f, test_f = "reduced_training_set.csv", "reduced_test_set.csv"
