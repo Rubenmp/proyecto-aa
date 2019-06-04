@@ -62,7 +62,7 @@ def compare_models(dataset, models):
 
 def tune_parameters(classifier, parameters, dataset, scorer, n_iter=5, verbose=False):
     verbosity = 2 if verbose else 0
-    classifier = RandomizedSearchCV(classifier, parameters, n_jobs=-1, cv=3,
+    classifier = RandomizedSearchCV(classifier, parameters, n_jobs=-1, cv=5,
                                     scoring=scorer, n_iter=n_iter, verbose=verbosity)
     classifier.fit(dataset.train_var, dataset.train_output)
 
@@ -74,14 +74,16 @@ def tune_parameters(classifier, parameters, dataset, scorer, n_iter=5, verbose=F
     return classifier, score
 
 
+def model_file(name):
+    return './models/' + name + '.model'
+
+
 def save_model(model, name):
-    filename = './models/' + name + '.model'
-    joblib.dump(model, open(filename, 'wb'))
+    joblib.dump(model, open(model_file(name), 'wb'), compress=True)
 
 
 def load_model(name):
-    filename = './models/' + name + '.model'
-    return joblib.load(open(filename, 'rb'))
+    return joblib.load(open(model_file(name), 'rb'))
 
 
 # Classification data
@@ -104,8 +106,8 @@ pct_parameters = {
 }
 
 # # 2:23
-pct_clf, _ = tune_parameters(pct_clf, pct_parameters, ds, scorer, n_iter=1 ,verbose=True)
-save_model(pct_clf, 'perceptron')
+pct_clf, _ = tune_parameters(pct_clf, pct_parameters, ds, scorer,verbose=True)
+save_model(pct_clf, 'Perceptron')
 
 
 
@@ -124,8 +126,7 @@ nn_parameters = {
 
 # 2:58
 nn_clf, _ = tune_parameters(nn_clf, nn_parameters, ds, scorer, verbose=True)
-save_model(nn_clf, 'Perceptron')
-
+save_model(nn_clf, 'NeuralNet')
 
 
 # AdaBoost

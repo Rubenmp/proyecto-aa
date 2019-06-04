@@ -192,8 +192,6 @@ class DataSet:
             plt.show()
 
 
-
-
     @staticmethod
     def plot_boxplot_with_outliers(data, index, file=None):
         import seaborn as sns
