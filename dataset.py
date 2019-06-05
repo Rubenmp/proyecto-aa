@@ -134,7 +134,8 @@ class DataSet:
         # Parameters of Isolation Forest are default parameters of 
         # new version, if we do not set these parameters it would
         # be a deprecated version of IsolationForest
-        outliers_IF = IsolationForest(behaviour="new", contamination="auto")
+        num_var = data[0].len()
+        outliers_IF = IsolationForest(behaviour="new", contamination="auto", n_estimators=num_var*5)
         data_with_obj_class = data[classes == obj_class]
         outliers_IF.fit(data_with_obj_class)
 

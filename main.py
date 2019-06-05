@@ -87,16 +87,16 @@ def load_model(name):
 
 
 # Classification data
-ds = get_aps_dataset(small=True)
+ds = get_aps_dataset(small=False)
 ds.preprocess()
 
 
 
 # Perceptrón
-
+"""
 pct_clf = Pipeline(steps=[('pca', PCA(svd_solver='full')),
                           ('poly', PolynomialFeatures(2)),
-                          ('pct', Perceptron(max_iter=10,
+                          ('pct', Perceptron(max_iter=330,
                                              tol=.001,
                                              n_jobs=-1))])
 pct_parameters = {
@@ -106,10 +106,9 @@ pct_parameters = {
 }
 
 # # 2:23
-pct_clf, _ = tune_parameters(pct_clf, pct_parameters, ds, scorer,verbose=True)
+pct_clf, score = tune_parameters(pct_clf, pct_parameters, ds, scorer,verbose=True)
 save_model(pct_clf, 'Perceptron')
-
-
+"""
 
 # Neural network
 
@@ -118,15 +117,16 @@ nn_clf = Pipeline(steps=[('pca', PCA(svd_solver='full')),
                          ('mlp', MLPClassifier(solver='adam'))])
 nn_parameters = {
     'pca__n_components': [.80, .90, .95],
-    'mlp__hidden_layer_sizes': [(100,), (100, 100), (100, 100, 100)],
+    'mlp__hidden_layer_sizes': [(100,), (75, 75), (20, 20, 20)],
     'mlp__activation': ['tanh', 'relu'],
     'mlp__alpha': np.logspace(-4, -1, num=5, base=10),
     'mlp__learning_rate': ['constant', 'adaptive']
 }
 
 # 2:58
-nn_clf, _ = tune_parameters(nn_clf, nn_parameters, ds, scorer, verbose=True)
+nn_clf, score = tune_parameters(nn_clf, nn_parameters, ds, scorer, verbose=True)
 save_model(nn_clf, 'NeuralNet')
+
 
 
 # AdaBoost

@@ -80,8 +80,10 @@ TODO: citar imagen
 https://cs.nju.edu.cn/zhouzh/zhouzh.files/publication/icdm08b.pdf
 
 
-
-De esta forma podemos visualizar en una variable la evolución de su distribución.
+El número de iteraciones es deseable adaptarlo en función del problema, por ejemplo respecto al número de variables del conjunto, usaremos $\{numero de variables\}*5$ iteraciones para tener un ajuste suficiente para el problema. 
+Al tener suficientes datos podemos permitirnos que la muestra aleatoria que se usa para entrenar cada árbol sea sin reemplazamiento. 
+La proporción esperada de outliers está fijada como se especifica en el paper original, alrededor del 10% de los datos.
+A continuación se visualiza la evolución de su distribución de una variable.
 
 ![](./imgs/boxplot_aa_000.png){ width=50% } ![](./imgs/new_boxplot_aa_000.png){ width=50% }
 
