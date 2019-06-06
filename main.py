@@ -25,9 +25,6 @@ from sklearn.externals import joblib
 print("Problema de clasificación APS Failure at Scania Trucks Data Set\n")
 
 
-
-
-
 def score_f(y_true, y_pred):
     """
         Score function for hyperparameter optimization
@@ -59,10 +56,9 @@ def compare_models(dataset, models):
     return max_score_model, models[max_score_model]
 
 
-
 def tune_parameters(classifier, parameters, dataset, scorer, n_iter=5, verbose=False):
     verbosity = 2 if verbose else 0
-    classifier = RandomizedSearchCV(classifier, parameters, n_jobs=-1, cv=5,
+    classifier = RandomizedSearchCV(classifier, parameters, n_jobs=-1, cv=3,
                                     scoring=scorer, n_iter=n_iter, verbose=verbosity)
     classifier.fit(dataset.train_var, dataset.train_output)
 
@@ -86,17 +82,32 @@ def load_model(name):
     return joblib.load(open(model_file(name), 'rb'))
 
 
+def load_all_models(model_names):
+    models = []
+    for name in model_names:
+        models.append(load_model(name))
+
+    return models
+
+
 # Classification data
-ds = get_aps_dataset(small=False)
+ds = get_aps_dataset(small=True)
 ds.preprocess()
+
+"""
+# Lectura de modelos
+model_names = ["Perceptron", "NeuralNet", "AdaBoost", "RandomForest"]
+models = load_all_models(model_names)
+"""
+
 
 
 
 # Perceptrón
-"""
+
 pct_clf = Pipeline(steps=[('pca', PCA(svd_solver='full')),
                           ('poly', PolynomialFeatures(2)),
-                          ('pct', Perceptron(max_iter=330,
+                          ('pct', Perceptron(max_iter=100,
                                              tol=.001,
                                              n_jobs=-1))])
 pct_parameters = {
@@ -105,10 +116,12 @@ pct_parameters = {
     'pct__alpha': np.logspace(-5, -1, num=5, base=10),
 }
 
+
+
 # # 2:23
 pct_clf, score = tune_parameters(pct_clf, pct_parameters, ds, scorer,verbose=True)
 save_model(pct_clf, 'Perceptron')
-"""
+
 
 # Neural network
 
@@ -126,7 +139,6 @@ nn_parameters = {
 # 2:58
 nn_clf, score = tune_parameters(nn_clf, nn_parameters, ds, scorer, verbose=True)
 save_model(nn_clf, 'NeuralNet')
-
 
 
 # AdaBoost
@@ -168,7 +180,7 @@ save_model(rf_clf, 'RandomForest')
 
 
 models = {
-    "SVM": pct_clf,
+    "Perceptron": pct_clf,
     "Neural network": nn_clf,
     "AdaBoost": ab_clf,
     "Random Forest": rf_clf

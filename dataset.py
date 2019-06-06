@@ -11,6 +11,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.ensemble import IsolationForest
 from sklearn.utils.class_weight import compute_sample_weight
 from sklearn.manifold import TSNE
+from matplotlib.colors import ListedColormap
 
 
 
@@ -98,7 +99,7 @@ class DataSet:
             account obj_class unbalanced classes could be considered
             as outliers 
         """
-        
+
         if show_evolution:
             print("Before. Train shape " + str(self.train_var.shape) + ", outputs " + str(len(self.train_output)))
         
@@ -134,7 +135,7 @@ class DataSet:
         # Parameters of Isolation Forest are default parameters of 
         # new version, if we do not set these parameters it would
         # be a deprecated version of IsolationForest
-        num_var = data[0].len()
+        num_var = len(data[0])
         outliers_IF = IsolationForest(behaviour="new", contamination="auto", n_estimators=num_var*5)
         data_with_obj_class = data[classes == obj_class]
         outliers_IF.fit(data_with_obj_class)
@@ -181,7 +182,7 @@ class DataSet:
         label_colors = [colors[label] for label in self.train_output]
 
         # Projection of training data into two dimensions
-        X_embedded = TSNE(n_components=3, method='exact', random_state=0).fit_transform(self.train_var)
+        X_embedded = TSNE(n_components=2, method='exact', random_state=0).fit_transform(self.train_var)
         var1 = [x[0] for x in X_embedded]
         var2 = [x[1] for x in X_embedded]
 
@@ -191,7 +192,7 @@ class DataSet:
 
         if show:
             plt.show()
-
+    
 
     @staticmethod
     def plot_boxplot_with_outliers(data, index, file=None):
