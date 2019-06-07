@@ -171,8 +171,21 @@ Para estos casos existen técnicas que estiman el error del modelo para una mues
 
 El algoritmo lineal elegido es el Perceptron. El Percetron es un algoritmo que trata de encontrar un separador lineal de los datos partiendo de un vector inicial de pesos y modificándolo iterativamente para corregir los fallos de clasificación. Por sí mismo no tiene parámetros, pero sí debemos elegir el mejor PCA y los parámetros de la regularización.
 
-Para el PCA obtenemos que lo mejor es aplicar una reducción que explique el TODO:XX de la varianza de la muestra original. En el caso de la regularización,
+Para el PCA obtenemos que lo mejor es aplicar una reducción que explique el TODO:XX de la varianza de la muestra original. Además se puede cambiar,
+    
+* Tipo de regularización
 
+    La idea principal de los tres tipos de regularización es sumar un término a la función de coste que se desea minimizar. Esto ayuda a la generalización del modelo, sea $p$ el número de pesos, $\beta_i$ el peso i-ésimo y $\alpha$ un parámetro a determinar, tenemos tres tipos principales de regularización,
+
+    * L1 (Lasso). En este caso se suma $\alpha\sum_{i=0}^p |\beta_i|$
+
+    * L2 (Ridge). Se suma $\alpha\sum_{i=0}^p \beta_i^2$ a la función de coste.
+
+    * Elasticnet. Combinación de las dos técnicas alteriores, suma $\alpha L_1 + (1-\alpha) L2$.
+
+    El parámetro $\alpha$ se estima mediante validación cruzada dentro del rango $[10^{-5}, 10^{-1}]$.
+
+ 
 ## Red neuronal
 
 La combinación de perceptrones permite superar la barrera de los discriminadores lineales.
@@ -199,11 +212,7 @@ Los elementos más relevantes a la hora de definir una red neuronal son los sigu
 
 * Alpha
 
-    Es un término de regularización que incentiva que la suma de los cuadrados de los pesos sea pequeña, ayudando a la generalización.
-    TODO: citar
-    https://icml.cc/Conferences/2004/proceedings/papers/354.pdf
-    Esto se consigue sumando a la función de pérdida un término $\alpha\sum_{i=0}^p \beta_i$, en este caso $\alpha$ será el parámetro a buscar, se considerarán
-    * $5$ números entre $10^{-4}$ y $10^{-1}$
+    Parámetro $\alpha$ descrito en el Perceptron, usando regularización L2.
 
 * Ratio de aprendizaje
 
