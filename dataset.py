@@ -5,7 +5,7 @@
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
+#import seaborn as sns
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
 from sklearn.ensemble import IsolationForest

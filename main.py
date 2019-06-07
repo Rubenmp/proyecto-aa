@@ -112,7 +112,6 @@ def load_all_models(model_names):
 ds = get_aps_dataset(small=False)
 ds.preprocess()
 
-exit()
 
 """
 # Lectura de modelos
