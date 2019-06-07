@@ -108,21 +108,12 @@ def load_all_models(model_names):
     return models
 
 
-
-
-
-"""
-# Lectura de modelos
-model_names = ["Perceptron", "NeuralNetwork", "AdaBoost", "RandomForest"]
-models = load_all_models(model_names)
-"""
-
 def tuning(ds):
     """
     Estimación de parámetros
     """
-    # Perceptron
 
+    # Perceptron
     pct_clf = Pipeline(steps=[
         ('pca', PCA(svd_solver='full')),
         ('poly', PolynomialFeatures(2)),
@@ -195,6 +186,7 @@ def tuning(ds):
     rf_parameters = {
         'pca__n_components': [.80, .90, .95, 1],
         'rf__n_estimators': [10, 40, 160],
+        'rf__max_depth' : [15, 25, 50],
     }
 
     start_time = time.time()
@@ -225,6 +217,9 @@ def train(ds):
     pct_clf.fit(ds.train_var, ds.train_output)
     print("--- %s seconds ---" % (time.time() - start_time))
 
+    # Some models do not allow fitting with weights,
+    # training with weights can be simulated copying 
+    # the same item several times in order to increase its importance
     train_var_res, train_output_res = resample(ds.train_var, ds.train_output)
 
     nn_clf = Pipeline(steps=[

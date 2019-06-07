@@ -212,7 +212,6 @@ Los elementos más relevantes a la hora de definir una red neuronal son los sigu
     * Ratio adaptativo. Al principio del aprendizaje puede ser mejor aprender más rápido y conforme el algoritmo converja reducir dicho ratio para reducir la probabilidad descrita anteriormente.
 
     
-
 ## Boosting
 Boosting es un algoritmo que permite combinar algoritmos para obtener mejores resultados.
 A cada uno de los algoritmos débiles se le asigna un peso en función de la precisión que tenga, de esta forma mejores algoritmos tendrán más peso en el resultado final, pero no lo determinarán completamente.
@@ -220,6 +219,18 @@ A cada uno de los algoritmos débiles se le asigna un peso en función de la pre
 El algoritmo planteado es AdaBoost (Adaptive Boosting) una técnica de boosting adaptativa.
 La adapción consiste en ir cambiando durante el entrenamiento el peso de los ejemplos, dando mayor importancia a aquellos que fueron clasificados incorrectamente en una iteración.
 Una de las críticas principales a este algoritmo es que tiene dificultades para resistir el ruido de la clasificación aleatoria.
+
+Los elementos más relevantes a la hora de definir un clasificador AdaBoost son los siguientes:
+
+* Algoritmo 
+
+    * SAMME (Stagewise Additive Modeling). Modificación del algoritmo AdaBoost que asigna más peso a los puntos mal clasificados.
+
+    * SAMME.R. Variante de SAMME para clasificadores que pueden tener como salida una estimación de las probabilidades. Este algoritmo ajusta los pesos en función de la distancia de dichas probabilidades con el resultado esperado final.
+    
+    SAMME.R es siempre mejor opción que SAMME, por ello se ha elegido como parámetro 
+    TODO: citar
+    https://web.stanford.edu/~hastie/Papers/samme.pdf
 
 
 ## Random forest
@@ -279,7 +290,18 @@ En este apartado se explican los tipos de regularización que se han planteado p
 * Alpha
 
     Parámetro $\alpha$ descrito en el Perceptron, usando regularización L2.
-    
+
+
+## Boosting
+
+El ratio de aprendizaje se considera un parámetro de regularización en AdaBoost, ya que permite usar más estimadores base sin causar sobreentrenamiento.
+TODO: citar
+https://pdfs.semanticscholar.org/8055/59b87c0efca148a9ffcd53f5296a51ad3183.pdf
+
+En este caso se han comparado los modelos con ratio de aprendizaje en el intervalo $[10^{-2}, 10^2]$.
+
+## Random forest
+
 
 # Valoración de los resultados
 
