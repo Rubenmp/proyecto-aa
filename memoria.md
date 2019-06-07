@@ -87,24 +87,18 @@ TODO: citar imagen
 https://cs.nju.edu.cn/zhouzh/zhouzh.files/publication/icdm08b.pdf
 
 
-El número de iteraciones es deseable adaptarlo en función del problema, por ejemplo respecto al número de variables del conjunto, usaremos $\{numero de variables\}*2$ iteraciones para tener un ajuste suficiente para el problema.
+El número de iteraciones es deseable adaptarlo en función del problema, por ejemplo respecto al número de variables del conjunto, usaremos $\{numero de variables\}$ iteraciones para tener un ajuste suficiente para el problema.
 Al tener suficientes datos podemos permitirnos que la muestra aleatoria que se usa para entrenar cada árbol sea sin reemplazamiento.
 La proporción esperada de outliers está fijada como se especifica en el paper original, alrededor del 10% de los datos.
 A continuación se visualiza la evolución de la distribución de valores de una variable.
 
-![](./imgs/boxplot_aa_000.png){ width=50% } ![](./imgs/new_boxplot_aa_000.png){ width=50% }
+![](./imgs/boxplot_aa_000_with_outliers.png){ width=50% } ![](./imgs/new_boxplot_aa_000_with_outliers.png){ width=50% }
 
-Cada imagen es un boxplot sin tener en cuenta candidatos a outliers si se usase una técnica univariable, posteriormente se han añadido dichos elementos como rombos.
+Cada imagen es un diagrama de caja sin tener en cuenta candidatos a outliers si se usase una técnica univariable, posteriormente se han añadido dichos elementos como rombos.
 En el primer gráfico se han calculado los candidatos a outliers respecto a una variable, todo esto dentro del conjunto de entrenamiento y con la clase positiva, aplicar detección de outliers sobre el test no tiene sentido.
 En la segunda imagen se han eliminado los outliers usando Isolation Forests.
 Como se puede comprobar este procedimiento no es equivalente a eliminar variable a variable los elementos que puedan ser outliers usando técnicas univariables. Isolation Forest es una técnica multivariable, combina la información obtenida en todas las variables para decidir los outliers.
 Esta aproximación puede aumentar la calidad del conjunto de entrenamiento al eliminar ruido.
-
-
-
-## Normalización de datos
-
-Los datos se han normalizado mediante una transformación lineal para que cada variable tenga media nula y desviación estándar 1. El objetivo de esta transformación es que los modelos no estén sesgados hacia dar más peso a determinadas variables. De este modo, dos valores iguales para variables distintas representan valores igual de extremos.
 
 
 
@@ -121,6 +115,14 @@ La desventaja de este análisis es que de que se pierde interpretabilidad de los
 
 Como a priori no sabemos con cuántas variables nos queremos quedar ni si es buena idea reducirlas, probaremos distintos porcentajes de varianza explicada (incluyendo el 100%, que supondría no reducir el número de variables) y se elegirá el mejor por valoración cruzada.
 
+
+# Normalización de datos
+
+Solamente viendo los diagramas de caja de las dos primeras variables se aprecia que hay diferencias de magnitud en las variables y que sería deseable realizar algún tipo de normalización.
+
+![](./imgs/boxplot_aa_000.png){ width=50% } ![](./imgs/boxplot_ab_000.png){ width=50% }
+
+Los datos se han normalizado mediante una transformación lineal para que cada variable tenga media nula y desviación estándar 1. El objetivo de esta transformación es que los modelos no estén sesgados hacia dar más peso a determinadas variables. De este modo, dos valores iguales para variables distintas representan valores igual de extremos.
 
 
 # Función de pérdida
@@ -158,21 +160,23 @@ La curva ROC es una forma de igualar la importancia de clasificar correctamente 
 
 # Selección de la técnica paramétrica
 
-
-# Definición de los modelos y estimación de parámetros
-
-Cada modelo tiene diferentes parámetros que pueden ajustarse para minimizar su error. Por otro lado hay parámetros del preprocesado o procesado de los datos que puede ser deseable que cambien en función del modelo pero no son del propio modelo. Por ejemplo, puede convenir la agresividad óptima del PCA sea diferente en función del modelo. Estos parámetros, así como los de la regularización que apliquemos al modelo no forman parte estrictamente del modelo pero los trataremos como si lo fuesen desde el punto de vista de su estimación.
+Cada modelo tiene diferentes parámetros que pueden ajustarse para minimizar su error. Por otro lado hay parámetros del preprocesado o procesado de los datos que puede ser deseable que cambien en función del modelo pero no son del propio modelo. Por ejemplo, puede convenir que la agresividad óptima del PCA sea diferente en función del modelo. Estos parámetros, así como los de la regularización que apliquemos al modelo no forman parte estrictamente del modelo pero los trataremos como si lo fuesen desde el punto de vista de su estimación.
 
 Hay parámetros que pueden elegirse mediante el estudio del problema porque está bien establecido su valor óptimo en función de las carácterísticas del problema. Sin embargo, a veces la elección no está tan clara, por ello se puede llevar a cabo la selección de la mejor combinación de parámetros mediante validación cruzada. Una manera de hacerlo es hallar una estimación del error para cada posible combinación de parámetros y elegir la óptima. Sin embargo, a poco que crezca el número de parámetros que queremos ajustar el número de combinaciones se hace intratable.
 
 Para estos casos existen técnicas que estiman el error del modelo para una muestra aleatoria de combinaciones de parámetros y tratan de inferir a partir de esa muestra la combinación que minimiza el error. Esta técnica está implementada en la función `RandomizedSearchCV` de la librería Scikit Learn y es la que usaremos.
 
+
+# Definición de los modelos y estimación de parámetros
+
+A continuación se muestra una descripción de los modelos y de sus parámetros más importantes. Para la regularización de los modelos también se hace una estimación de parámetros que se comentará posteriormente.
+
 ## Perceptron
 
 El algoritmo lineal elegido es el Perceptron. El Percetron es un algoritmo que trata de encontrar un separador lineal de los datos partiendo de un vector inicial de pesos y modificándolo iterativamente para corregir los fallos de clasificación. Por sí mismo no tiene parámetros, pero sí debemos elegir el mejor PCA y los parámetros de la regularización.
+Para el PCA obtenemos que lo mejor es aplicar una reducción que explique el $80%$ de la varianza de la muestra original. 
 
-Para el PCA obtenemos que lo mejor es aplicar una reducción que explique el TODO:XX de la varianza de la muestra original. En el caso de la regularización,
-
+ 
 ## Red neuronal
 
 La combinación de perceptrones permite superar la barrera de los discriminadores lineales.
@@ -196,14 +200,6 @@ Los elementos más relevantes a la hora de definir una red neuronal son los sigu
     * Sigmoide: $f(x)=1/(1+e^{-x})$, es una función no lineal acotada entre $0$ y $1$, existe una generalización para problemas de clasificación múltiple llamada Softmax.
     * Tangente hiperbólica: $f(x) = tanh(x)$, otra función no lineal acotada entre $-1$ y $1$.
     * RELU (Rectifier Linear Unit): $f(x) = \max (0,x)$, al no estar acotada aplica un cambio más agresivo que las dos anteriores con valores altos. Al tener en cuenta solamente los valores positivos puede matar muchas neuronas.
-
-* Alpha
-
-    Es un término de regularización que incentiva que la suma de los cuadrados de los pesos sea pequeña, ayudando a la generalización.
-    TODO: citar
-    https://icml.cc/Conferences/2004/proceedings/papers/354.pdf
-    Esto se consigue sumando a la función de pérdida un término $\alpha\sum_{i=0}^p \beta_i$, en este caso $\alpha$ será el parámetro a buscar, se considerarán
-    * $5$ números entre $10^{-4}$ y $10^{-1}$
 
 * Ratio de aprendizaje
 
@@ -231,27 +227,58 @@ Random forest es una mejora sobre los árboles de decisión. Se construyen vario
 
 Una diferencia con los árboles de decisión es que la clasificación hecha por random forests es difícil de interpretar, pero esto no es un problema en este caso ya que las variables están inicialmente anonimizadas.
 
+Los elementos más relevantes a la hora de definir un clasificador random forest son los siguientes:
 
-# Métrica del ajuste
+* Número de árboles
 
-En este problema se especifica que el objetivo es minimizar el coste, definido como
-$$\text{coste\_total} = \text{coste\_1} \times \text{FP} + \text{coste\_2} \times \text{FN} \text{,}$$
+    Búsqueda del mejor número de árboles dentro del conjunto
+    
+    * $\{10, 40, 160\}$
 
-donde $\text{coste\_1} = 10$, $\text{coste\_2} = 500$ y $\text{FP}$ y $\text{FN}$ denotan, respectivamente, el número de datos incorrectamente clasificados por el modelo como positivos y negativos. Es decir, el coste de un falso negativo (no detectar la verdadera causa de la avería) es mucho mayor que el de un falso positivo (arreglar innecesariamente el APS).
+* Conjunto de entrenamiento para cada árbol
 
-Por tanto, una métrica de la bondad del ajuste tiene que cumplir que su maximización sea equivalente a la minimización de $\text{coste\_total}$. Una posibilidad es usar una tasa de acierto ponderada de la siguiente manera:
+    Muestra aleatoria con reemplazamiento de igual tamaño al conjunto de datos.
 
-$$\text{tasa\_acierto\_ponderada} = \frac{50 \times \text{VP} + \text{VN}}{50 \times \text{P} + \text{N}} \text{,}$$
+* Criterio para medir la calidad de una ramificación
 
-donde $P$ y $N$ denotan el número de ejemplos datos positivos y negativos y $VP$ y $VN$ representan, respectivamente, el número de datos correctamente clasificados por el modelo como positivos y negativos.
+    Elemento necesario a la hora de entrenar un árbol. 
 
-Podemos comprobar que minimizar $\text{coste\_total}$ es equivalente a maximizar $\text{tasa\_acierto\_ponderada}$. En efecto, maximizar $\text{tasa\_acierto\_ponderada}$ equivale a maximizar $50 \times \text{VP} + \text{VN} = 50 \times \text{P} - 50 \times \text{FP} + \text{N} - \text{FN}$ porque $50 \times \text{P} + \text{N}$ es constante, y por la misma razón es equivalente a minimizar $50 \times \text{FP} + \text{FN}$, que es obviamente lo mismo que minimizar $\text{coste\_total}$.
+    * Gini. Hace un cálculo de las impurezas. Para cada rama se mide como $G=\sum_{i=1}^C p(i)(1-p(i))$, donde $C=2$ es el número de clases y $p(i)$ es la probabilidad de que al escoger un elemento al azar en dicha rama sea de la clase i-ésima. Una ramificación perfecta tendría una impureza Gini cero en ambas ramas. Después se calcula una suma ponderada de dichas impurezas en función de la cantidad de elementos de cada rama.
 
-La métrica $\text{tasa\_acierto\_ponderada}$ tiene la virtud de estar acotada entre 0, que representa que el coste es el máximo posible, y 1, que representa que el coste es el mínimo posible.
+    * Entropía. Criterio para calcula el grado de impredictibilidad de una variable aleatoria. Su fórmula es $Entropy = -\sum_{i=1}^C p(i)\log_2(p(i))$ y se usa para calcular la ganancia de información para cada ramificación, de forma que las mejores ramificaciones se apliquen primero.
 
-TODO: terminar
+    Ambos criterios dan el mismo resultado en la inmensa mayoría de los casos, pero Gini tiene mejor coste computacional, por ello se ha elegido como criterio.
+    TODO: citar
+    https://www.unine.ch/files/live/sites/imi/files/shared/documents/papers/Gini_index_fulltext.pdf
 
-# Estimación del error
+* Máximo de variables por árbol
+
+    Para generar cada árbol no se eligen todos los predictores ya que si existen predictores muy fuertes entonces los árboles tendrían alta correlación. Se ha usado como valor óptimo la raíz cuadrada del número de variables.
+    
+
+# Idoneidad de la regularización
+
+En este apartado se explican los tipos de regularización que se han planteado para cada algoritmo y sus parámetros relevantes.
+
+## Perceptron
+
+* Tipo de regularización
+
+    La idea principal de los tres tipos de regularización es sumar un término a la función de coste que se desea minimizar. Esto ayuda a la generalización del modelo, sea $p$ el número de pesos, $\beta_i$ el peso i-ésimo y $\alpha$ un parámetro a determinar, tenemos tres tipos principales de regularización,
+
+    * L1 (Lasso). En este caso se suma $\alpha\sum_{i=0}^p |\beta_i|$
+
+    * L2 (Ridge). Se suma $\alpha\sum_{i=0}^p \beta_i^2$ a la función de coste.
+
+    * Elasticnet. Combinación de las dos técnicas alteriores, suma $\alpha L_1 + (1-\alpha) L2$.
+
+    El parámetro $\alpha$ se estima mediante validación cruzada dentro del rango $[10^{-5}, 10^{-1}]$.
+
+## Red neuronal
+
+* Alpha
+
+    Parámetro $\alpha$ descrito en el Perceptron, usando regularización L2.
 
 # Valoración de los resultados
 
