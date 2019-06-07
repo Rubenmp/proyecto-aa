@@ -315,8 +315,7 @@ Una regularización que se puede hacer a random forest es limitar la altura máx
 Los parámetros considerados para la regularización son profundidades dentro del conjunto $\{15,25,50\}$ y la validación cruzada ha estimado que el mejor de dichos parámetros es $25$.
 
 
-
-# Valoración de los resultados
+# Valoración de los resultados y justificación de la calidad del modelo
 
 +---------------+------------------------+---------------+
 | Modelo        | Score de entrenamiento | Score de test |
@@ -329,5 +328,3 @@ Los parámetros considerados para la regularización son profundidades dentro de
 +---------------+------------------------+---------------+
 | Random Forest |                        |               |
 +---------------+------------------------+---------------+
-
-# Justificación de la calidad del modelo
