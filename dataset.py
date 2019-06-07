@@ -14,8 +14,8 @@ from sklearn.manifold import TSNE
 import time
 
 class DataSet:
-    POS_CLASS_WEIGHT = 500
-    NEG_CLASS_WEIGHT = 10
+    POS_CLASS_WEIGHT = 500  # weight of the elements in the positive class
+    NEG_CLASS_WEIGHT = 10   # weight of the elements in the negative class
     POSITIVE_CLASS = 1
     NEGATIVE_CLASS = -1
     WEIGHTS_DIC = {POSITIVE_CLASS: POS_CLASS_WEIGHT,
@@ -93,16 +93,13 @@ class DataSet:
         self.train_var = imp.transform(self.train_var)
         self.test_var = imp.transform(self.test_var)
 
-    def __remove_outliers(self, show_evolution=False):
+    def __remove_outliers(self):
         """
             Remove outliers from data with class obj_class
             If outliers are removed from data not taking into
             account obj_class unbalanced classes could be considered
             as outliers 
         """
-
-        if show_evolution:
-            print("Before. Train shape " + str(self.train_var.shape) + ", outputs " + str(len(self.train_output)))
         
         # Remove outliers with negative class
         neg_class_data = DataSet.__remove_outliers_by_class(self.train_var, self.train_output, DataSet.NEGATIVE_CLASS)
@@ -121,9 +118,6 @@ class DataSet:
         self.train_var = data[random_indexes]
         self.train_output = classes[random_indexes]
 
-        if show_evolution:
-            print("After. Train shape " + str(self.train_var.shape) + ", outputs " + str(len(self.train_output)))
-
     @staticmethod
     def __remove_outliers_by_class(data, classes, obj_class):
         """
@@ -136,7 +130,8 @@ class DataSet:
         # new version, if we do not set these parameters it would
         # be a deprecated version of IsolationForest
         num_var = len(data[0])
-        outliers_IF = IsolationForest(behaviour="new", contamination="auto", n_estimators=num_var)
+        outliers_IF = IsolationForest(behaviour="new", contamination="auto",
+                                      n_estimators=num_var)
         data_with_obj_class = data[classes == obj_class]
         outliers_IF.fit(data_with_obj_class)
 
@@ -158,17 +153,28 @@ class DataSet:
         self.train_var = sc.transform(self.train_var)
         self.test_var  = sc.transform(self.test_var)
 
-    # Getter
     def get_sample_weight(self, train=True):
+        """
+            Returns the weight of every element in the dataset depending on its
+            class.
+        """
         if train:
             return compute_sample_weight(DataSet.WEIGHTS_DIC, self.train_output)
         else:
             return compute_sample_weight(DataSet.WEIGHTS_DIC, self.test_output)
 
     def get_sample_weight_train(self):
+        """
+            Returns the weight of every element in the training dataset
+            depending on its class.
+        """
         return self.get_sample_weight()
 
     def get_sample_weight_test(self):
+        """
+            Returns the weight of every element in the training dataset
+            depending on its class.
+        """
         return self.get_sample_weight(train=False)
 
     # Plotting functions
@@ -177,7 +183,8 @@ class DataSet:
         label_colors = [colors[label] for label in self.train_output]
 
         # Projection of training data into two dimensions
-        X_embedded = TSNE(n_components=2, method='exact', random_state=0).fit_transform(self.train_var)
+        X_embedded = TSNE(n_components=2, method='exact',
+                          random_state=0).fit_transform(self.train_var)
         var1 = [x[0] for x in X_embedded]
         var2 = [x[1] for x in X_embedded]
 
