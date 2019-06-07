@@ -279,6 +279,7 @@ En este apartado se explican los tipos de regularización que se han planteado p
 * Alpha
 
     Parámetro $\alpha$ descrito en el Perceptron, usando regularización L2.
+    
 
 # Valoración de los resultados
 

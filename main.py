@@ -41,7 +41,7 @@ def resample(X, y):
     X_res, y_res = list(X), list(y)
     for x, c in zip(X, y):
         if c == 1:
-            for i in range(49):
+            for _ in range(49):
                 X_res.append(x)
                 y_res.append(-1)
     X_res, y_res = np.array(X_res), np.array(y_res)
@@ -108,11 +108,8 @@ def load_all_models(model_names):
     return models
 
 
-# Classification data
-ds = get_aps_dataset(small=False)
-ds.preprocess()
 
-exit()
+
 
 """
 # Lectura de modelos
@@ -120,7 +117,7 @@ model_names = ["Perceptron", "NeuralNetwork", "AdaBoost", "RandomForest"]
 models = load_all_models(model_names)
 """
 
-def tuning():
+def tuning(ds):
     """
     Estimación de parámetros
     """
@@ -216,7 +213,7 @@ def tuning():
     return models
 
 
-def train():
+def train(ds):
     pct_clf = Pipeline(steps=[
         ('pca', PCA(svd_solver='full', n_components=0.95)),
         ('poly', PolynomialFeatures(2)),
@@ -282,22 +279,26 @@ def yes_or_no(question):
     while True:
         ans = input(question)
         if len(ans) > 0:
-            if ans[0] == "S" or ans[0] == "s":
+            if ans[0].lower() == "s":
                 ans = True
                 break
-            elif ans[0] == "N" or ans[0] == "n":
+            elif ans[0].lower() == "n":
                 ans = False
                 break
     return ans
 
 
 def main():
+    # Classification data
+    ds = get_aps_dataset(small=False)
+    ds.preprocess()
+
     do_tuning = yes_or_no("¿Desea hacer la estimación de los hiperparámetros "
                           "para cada modelo? (Puede tardar algunas horas) "
                           "[Sí/No] ")
 
     if do_tuning:
-        models = tuning()
+        models = tuning(ds)
     else:
         do_training = yes_or_no("¿Desea hacer el entrenamiento con los "
                                 "parámetros que figuran en la memoria de la "
@@ -305,7 +306,7 @@ def main():
                                 "alternativamente puede leer los modelos ya "
                                 "entrenados) [Sí/No] ")
         if do_training:
-            models = train()
+            models = train(ds)
         else:
             print("Procederemos a leer los modelos ya entrenados.")
             models = load_all_models(("Perceptron", "Neural network",
@@ -323,4 +324,5 @@ def main():
               f"{score, score_train}", )
 
 
-main()
+if __name__ == "__main__":
+    main()
