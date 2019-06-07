@@ -71,7 +71,7 @@ class DataSet:
         # TODO: si la estrategia de imputación es la de la media, se puede simplemente poner los NaN a 0 tras normalizar
         self.__impute_missing_values()
 
-        # self.__remove_outliers()
+        self.__remove_outliers()
 
         if normalization:
             self.__normalize()
@@ -129,7 +129,7 @@ class DataSet:
         # new version, if we do not set these parameters it would
         # be a deprecated version of IsolationForest
         num_var = len(data[0])
-        outliers_IF = IsolationForest(behaviour="new", contamination="auto", n_estimators=num_var*5)
+        outliers_IF = IsolationForest(behaviour="new", contamination="auto", n_estimators=num_var*2)
         data_with_obj_class = data[classes == obj_class]
         outliers_IF.fit(data_with_obj_class)
 

@@ -78,9 +78,8 @@ TODO: citar justificación separar tratamiento de outliers por clases
 https://idus.us.es/xmlui/bitstream/handle/11441/42708/Deletin%20or%20keeping.pdf?sequence=1&isAllowed=y
 
 
-### Isolation Forests
-El algoritmo usado para la detección de outliers es Isolation Forests.
-Este algoritmo combina diferentes árboles de decisión de profundidad uno. En cada etapa del algoritmo se selecciona una característica al azar y un valor aleatorio entre el mínimo y máximo de dicha característica. Este proceso se repite varias etapas, la idea básica es que los outliers en cada variable tendrán valores atípicos, por ello es más probable que queden a un lado de dicho valor elegido al azar. Este proceso se repite varias veces, la identificación de los outliers se basa en que para identificar a un punto que no lo es se necesitará mayor cantidad de particiones.
+### Isolation Forest
+El algoritmo usado para la detección de outliers es Isolation Forest, que combina diferentes árboles de decisión de profundidad uno para elegir los outliers. En cada etapa del algoritmo se selecciona una característica al azar y un valor aleatorio entre el mínimo y máximo de dicha característica. Este proceso se repite varias etapas, la idea básica es que los outliers en cada variable tendrán valores atípicos, por ello es más probable que queden a un lado de dicho valor elegido al azar. Este proceso se repite varias veces, la identificación de los outliers se basa en que para identificar a un punto que no lo es se necesitará mayor cantidad de particiones.
 
 
 ![](./imgs/isolation_forest.png){ width=85% }
@@ -88,23 +87,26 @@ TODO: citar imagen
 https://cs.nju.edu.cn/zhouzh/zhouzh.files/publication/icdm08b.pdf
 
 
-El número de iteraciones es deseable adaptarlo en función del problema, por ejemplo respecto al número de variables del conjunto, usaremos $\{numero de variables\}*5$ iteraciones para tener un ajuste suficiente para el problema.
+El número de iteraciones es deseable adaptarlo en función del problema, por ejemplo respecto al número de variables del conjunto, usaremos $\{numero de variables\}*2$ iteraciones para tener un ajuste suficiente para el problema.
 Al tener suficientes datos podemos permitirnos que la muestra aleatoria que se usa para entrenar cada árbol sea sin reemplazamiento.
 La proporción esperada de outliers está fijada como se especifica en el paper original, alrededor del 10% de los datos.
-A continuación se visualiza la evolución de su distribución de una variable.
+A continuación se visualiza la evolución de la distribución de valores de una variable.
 
 ![](./imgs/boxplot_aa_000.png){ width=50% } ![](./imgs/new_boxplot_aa_000.png){ width=50% }
 
+Cada imagen es un boxplot sin tener en cuenta candidatos a outliers si se usase una técnica univariable, posteriormente se han añadido dichos elementos como rombos.
 En el primer gráfico se han calculado los candidatos a outliers respecto a una variable, todo esto dentro del conjunto de entrenamiento y con la clase positiva, aplicar detección de outliers sobre el test no tiene sentido.
-Se ha realizado el boxplot sin tener en cuenta dichos candidatos y se han añadido después como rombos.
 En la segunda imagen se han eliminado los outliers usando Isolation Forests.
-Teniendo en cuenta esta aproximación puede aumentar la calidad del conjunto de entrenamiento.
+Como se puede comprobar este procedimiento no es equivalente a eliminar variable a variable los elementos que puedan ser outliers usando técnicas univariables. Isolation Forest es una técnica multivariable, combina la información obtenida en todas las variables para decidir los outliers.
+Esta aproximación puede aumentar la calidad del conjunto de entrenamiento al eliminar ruido.
 
 
 
 ## Normalización de datos
 
 Los datos se han normalizado mediante una transformación lineal para que cada variable tenga media nula y desviación estándar 1. El objetivo de esta transformación es que los modelos no estén sesgados hacia dar más peso a determinadas variables. De este modo, dos valores iguales para variables distintas representan valores igual de extremos.
+
+
 
 # Selección de un subconjunto de variables
 
@@ -117,7 +119,7 @@ Posteriormente, se elige el porcentaje de varianza que se quiere poder explicar 
 
 La desventaja de este análisis es que de que se pierde interpretabilidad de los datos al optimizar con combinaciones lineales de los mismos. En este caso no nos importa esta desventaja ya que las variables iniciales estaban ya anonimizadas.
 
-Como a priori no sabemos con cuántas variables nos queremos quedar ni si es buena idea reducirlas, probaremos distintos porcentajes de varianza explicada (incluyendo el 100%, que supondría no reducir el número de variables) y elegiremos el mejor por valoración cruzada.
+Como a priori no sabemos con cuántas variables nos queremos quedar ni si es buena idea reducirlas, probaremos distintos porcentajes de varianza explicada (incluyendo el 100%, que supondría no reducir el número de variables) y se elegirá el mejor por valoración cruzada.
 
 
 
