@@ -87,12 +87,12 @@ TODO: citar imagen
 https://cs.nju.edu.cn/zhouzh/zhouzh.files/publication/icdm08b.pdf
 
 
-El número de iteraciones es deseable adaptarlo en función del problema, por ejemplo respecto al número de variables del conjunto, usaremos $\{numero de variables\}*2$ iteraciones para tener un ajuste suficiente para el problema.
+El número de iteraciones es deseable adaptarlo en función del problema, por ejemplo respecto al número de variables del conjunto, usaremos $\{numero de variables\}$ iteraciones para tener un ajuste suficiente para el problema.
 Al tener suficientes datos podemos permitirnos que la muestra aleatoria que se usa para entrenar cada árbol sea sin reemplazamiento.
 La proporción esperada de outliers está fijada como se especifica en el paper original, alrededor del 10% de los datos.
 A continuación se visualiza la evolución de la distribución de valores de una variable.
 
-![](./imgs/boxplot_aa_000.png){ width=50% } ![](./imgs/new_boxplot_aa_000.png){ width=50% }
+![](./imgs/boxplot_aa_000_with_outliers.png){ width=50% } ![](./imgs/new_boxplot_aa_000_with_outliers.png){ width=50% }
 
 Cada imagen es un boxplot sin tener en cuenta candidatos a outliers si se usase una técnica univariable, posteriormente se han añadido dichos elementos como rombos.
 En el primer gráfico se han calculado los candidatos a outliers respecto a una variable, todo esto dentro del conjunto de entrenamiento y con la clase positiva, aplicar detección de outliers sobre el test no tiene sentido.
@@ -116,7 +116,11 @@ La desventaja de este análisis es que de que se pierde interpretabilidad de los
 Como a priori no sabemos con cuántas variables nos queremos quedar ni si es buena idea reducirlas, probaremos distintos porcentajes de varianza explicada (incluyendo el 100%, que supondría no reducir el número de variables) y se elegirá el mejor por valoración cruzada.
 
 
-## Normalización de datos
+# Normalización de datos
+
+Solamente viendo los boxplots de las dos primeras variables se aprecia que hay cambios de magnitud en las variables y que sería deseable realizar algún tipo de normalización.
+
+![](./imgs/boxplot_aa_000.png){ width=50% } ![](./imgs/boxplot_ab_000.png){ width=50% }
 
 Los datos se han normalizado mediante una transformación lineal para que cada variable tenga media nula y desviación estándar 1. El objetivo de esta transformación es que los modelos no estén sesgados hacia dar más peso a determinadas variables. De este modo, dos valores iguales para variables distintas representan valores igual de extremos.
 

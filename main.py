@@ -9,7 +9,6 @@ Autores:
 """
 
 from dataset import *
-#from imputer import *
 from sklearn.decomposition import PCA
 from sklearn.linear_model import Perceptron
 from sklearn.metrics import make_scorer, accuracy_score
@@ -98,8 +97,10 @@ def load_all_models(model_names):
 
 
 # Classification data
-ds = get_aps_dataset(small=True)
+ds = get_aps_dataset(small=False)
 ds.preprocess()
+
+exit()
 
 """
 # Lectura de modelos

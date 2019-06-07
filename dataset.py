@@ -5,6 +5,7 @@
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
 from sklearn.ensemble import IsolationForest
@@ -47,15 +48,13 @@ class DataSet:
         reader = list(csv.reader(csv_file))[20:]
         reader = np.array(reader)
 
-        var_names = [l for l in reader[0, 1:]]
+        self.var_names = [l for l in reader[0, 1:]]
 
         variables = np.array(
             list(list(map(lambda x: np.nan if x == 'na' else np.float(x), l))
                  for l in reader[1:, 1:]))
         output = np.fromiter(map(lambda x: -1 if x == "neg" else 1,
                                  reader[1:, 0]), dtype=np.int)
-
-        self.var_names = var_names
 
         csv_file.close()
 
@@ -68,13 +67,13 @@ class DataSet:
         print("Preprocesamiento de datos para clasificación")
 
         # Impute missing values
-        # TODO: si la estrategia de imputación es la de la media, se puede simplemente poner los NaN a 0 tras normalizar
         self.__impute_missing_values()
-
         self.__remove_outliers()
 
         if normalization:
             self.__normalize()
+        
+
 
     def __impute_missing_values(self):
         """
@@ -129,7 +128,7 @@ class DataSet:
         # new version, if we do not set these parameters it would
         # be a deprecated version of IsolationForest
         num_var = len(data[0])
-        outliers_IF = IsolationForest(behaviour="new", contamination="auto", n_estimators=num_var*2)
+        outliers_IF = IsolationForest(behaviour="new", contamination="auto", n_estimators=num_var)
         data_with_obj_class = data[classes == obj_class]
         outliers_IF.fit(data_with_obj_class)
 
@@ -181,11 +180,10 @@ class DataSet:
         if show:
             plt.show()
 
-    @staticmethod
-    def plot_boxplot_with_outliers(data, index, file=None):
-        import seaborn as sns
-        sns.boxplot(x=data[index])
-        plt.title(f'Boxplot de la variable aa_000')
+
+    def plot_boxplot(self, data, index, show_outliers=False, file=None):
+        sns.boxplot(x=data[index], showfliers=show_outliers)
+        plt.title(f'Boxplot de la variable {self.var_names[index]}')
         if file is not None:
             plt.savefig(file)
         plt.show()
