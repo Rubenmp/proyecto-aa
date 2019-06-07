@@ -12,18 +12,38 @@ from dataset import *
 from sklearn.decomposition import PCA
 from sklearn.linear_model import Perceptron
 from sklearn.metrics import make_scorer, accuracy_score
-from sklearn.model_selection import KFold, RandomizedSearchCV, cross_val_score
+from sklearn.model_selection import RandomizedSearchCV, cross_val_score
 from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
-from sklearn.utils.class_weight import compute_sample_weight
 from sklearn.externals import joblib
 from sklearn.metrics import confusion_matrix
 import time
 
 
-print("Problema de clasificación APS Failure at Scania Trucks Data Set\n")
+##### Functions to save and load models ########################################
+
+def model_file(name):
+    return './models/' + name + '.model'
+
+
+def save_model(model, name):
+    joblib.dump(model, open(model_file(name), 'wb'), compress=True)
+
+
+def load_model(name):
+    return joblib.load(open(model_file(name), 'rb'))
+
+
+def load_all_models(model_names):
+    models = {}
+    for name in model_names:
+        models[name] = load_model(name)
+
+    return models
+
+################################################################################
 
 model_names = ("Perceptron", "Neural network",
                                       "AdaBoost", "Random Forest")
@@ -50,7 +70,12 @@ scorer = make_scorer(score_f)
 ########################
 #  Auxiliary functions
 ########################
+
 def resample(X, y):
+    """
+    This resampling function returns a modified version of the dataset where
+    the elements of the positive class are repeated 50 times.
+    """
     X_res, y_res = list(X), list(y)
     for x, c in zip(X, y):
         if c == 1:
@@ -88,6 +113,9 @@ def compare_models(dataset, models):
 
 def tune_parameters(classifier, parameters, dataset, scorer, n_iter=10,
                     verbose=False):
+    """
+    Find the optimal parameters of a model
+    """
     verbosity = 2 if verbose else 0
     classifier = RandomizedSearchCV(classifier, parameters, n_jobs=-1, cv=3,
                                     scoring=scorer, n_iter=n_iter,
@@ -99,36 +127,6 @@ def tune_parameters(classifier, parameters, dataset, scorer, n_iter=10,
           f"{classifier.best_params_}")
 
     return classifier
-
-
-
-########################
-#     Model storage
-########################
-
-def model_file(name):
-    return './models/' + name + '.model'
-
-
-def save_model(model, name):
-    joblib.dump(model, open(model_file(name), 'wb'), compress=True)
-
-
-def load_model(name):
-    return joblib.load(open(model_file(name), 'rb'))
-
-
-def load_all_models(model_names):
-    models = {}
-    for name in model_names:
-        models[name] = load_model(name)
-
-    return models
-
-
-###################################
-#  Search of best hyperparameters
-###################################
 
 
 def tuning(ds):
@@ -152,8 +150,8 @@ def tuning(ds):
     # Best parameters
     # {'pct__penalty': 'elasticnet', 'pct__alpha': 0.0001, 'pca__n_components': 0.95}
     start_time = time.time()
-    pct_clf = tune_parameters(pct_clf, pct_parameters, ds, scorer,
-                              verbose=True, n_iter=30)
+    #pct_clf = tune_parameters(pct_clf, pct_parameters, ds, scorer,
+    #                          verbose=True, n_iter=30)
     print("--- %s seconds ---" % (time.time() - start_time))
     save_model(pct_clf, 'Perceptron CV')
 
@@ -177,7 +175,7 @@ def tuning(ds):
     # {'pca__n_components': 0.95, 'mlp__learning_rate': 'constant',
     # 'mlp__hidden_layer_sizes': (100,), 'mlp__alpha': 0.1, 'mlp__
     # activation': 'relu'}
-    nn_clf = tune_parameters(nn_clf, nn_parameters, ds, scorer, verbose=True)
+    #nn_clf = tune_parameters(nn_clf, nn_parameters, ds, scorer, verbose=True)
     save_model(nn_clf, 'Neural Network CV')
     # print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -186,7 +184,7 @@ def tuning(ds):
         ('pca', PCA(svd_solver='full')),
         ('poly', PolynomialFeatures(2)),
         ('ab', AdaBoostClassifier())
-    ])  #TODO: explicar SAMME.R
+    ])
 
     ab_parameters = {
         'pca__n_components': [.80, .90, .95, 1],
@@ -197,7 +195,7 @@ def tuning(ds):
     start_time = time.time()
     # Best parameters
     # {'pca__n_components': 0.8, 'ab__learning_rate': 0.1}
-    ab_clf = tune_parameters(ab_clf, ab_parameters, ds, scorer, verbose=True)
+    #ab_clf = tune_parameters(ab_clf, ab_parameters, ds, scorer, verbose=True)
     save_model(ab_clf, 'AdaBoost CV')
     print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -279,6 +277,7 @@ def train(ds, save_models=True):
                                       criterion='gini',
                                       class_weight=ds.WEIGHTS_DIC,
                                       max_depth=25))
+
     ])
 
     start_time = time.time()
@@ -364,6 +363,8 @@ def yes_or_no(question):
 
 
 def main():
+    print("Problema de clasificación APS Failure at Scania Trucks Data Set\n")
+
     # Classification data
     ds = get_aps_dataset(small=True)
     ds.preprocess()
@@ -392,10 +393,14 @@ def main():
 
     for model_name in models:
         model = models[model_name]
-        score = model.score(ds.test_var, ds.test_output,
-                            sample_weight=ds.get_sample_weight_test())
-        score_train = model.score(ds.train_var, ds.train_output,
-                                  sample_weight=ds.get_sample_weight_train())
+        if do_tuning:
+            score = model.score(ds.test_var, ds.test_output)
+            score_train = model.score(ds.train_var, ds.train_output)
+        else:
+            score = model.score(ds.test_var, ds.test_output,
+                                sample_weight=ds.get_sample_weight_test())
+            score_train = model.score(ds.train_var, ds.train_output,
+                                      sample_weight=ds.get_sample_weight_train())
         preds = model.predict(ds.test_var)
         print(score_f(ds.test_output, preds))
         print(f"Precisión ponderada del modelo {model_name}: "
