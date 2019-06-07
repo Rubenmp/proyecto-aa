@@ -149,6 +149,7 @@ def tuning(ds):
         'pct__alpha': np.logspace(-5, -1, num=5, base=10),
     }
 
+    # Best parameters
     # {'pct__penalty': 'elasticnet', 'pct__alpha': 0.0001, 'pca__n_components': 0.95}
     start_time = time.time()
     pct_clf = tune_parameters(pct_clf, pct_parameters, ds, scorer,
@@ -172,6 +173,7 @@ def tuning(ds):
     }
 
     start_time = time.time()
+    # Best parameters
     # {'pca__n_components': 0.95, 'mlp__learning_rate': 'constant',
     # 'mlp__hidden_layer_sizes': (100,), 'mlp__alpha': 0.1, 'mlp__
     # activation': 'relu'}
@@ -193,6 +195,7 @@ def tuning(ds):
 
     # # 3x5 = 3566s
     start_time = time.time()
+    # Best parameters
     # {'pca__n_components': 0.8, 'ab__learning_rate': 0.1}
     ab_clf = tune_parameters(ab_clf, ab_parameters, ds, scorer, verbose=True)
     save_model(ab_clf, 'AdaBoost CV')
@@ -213,6 +216,7 @@ def tuning(ds):
     }
 
     start_time = time.time()
+    # Best parameters
     # {'rf__n_estimators': 160, 'rf__criterion': 'gini', 'pca__n_components': 0.8}
     rf_clf = tune_parameters(rf_clf, rf_parameters, ds, scorer, verbose=True, n_iter=12)
     save_model(rf_clf, 'RandomForest CV')
@@ -274,7 +278,7 @@ def train(ds, save_models=True):
         ('rf', RandomForestClassifier(max_features='sqrt', n_estimators=160,
                                       criterion='gini',
                                       class_weight=ds.WEIGHTS_DIC,
-                                      max_depth=10))
+                                      max_depth=25))
     ])
 
     start_time = time.time()
@@ -297,6 +301,7 @@ def train(ds, save_models=True):
 
 def truncate_number(number):
     return int(str(number)[:3])
+
 
 def print_results_table(train_r, test_r):
     table =  """
@@ -336,10 +341,13 @@ def show_results(ds, p_models=None):
         test_results.append(truncate_number(test_acc))
         print(f"Score en test: {test_acc}")
 
+        # Confusion matrix
+        # tn, fp, fn, tp = confusion_matrix([0, 1, 0, 1], [1, 1, 1, 0]).ravel()
 
         print("\n")
-    
+
     print_results_table(train_results, test_results)
+
 
 def yes_or_no(question):
     while True:
@@ -357,10 +365,10 @@ def yes_or_no(question):
 
 def main():
     # Classification data
-    ds = get_aps_dataset(small=False)
+    ds = get_aps_dataset(small=True)
     ds.preprocess()
 
-    models = train(ds, save_models=True)
+    models = train(ds, save_models=False)
     show_results(ds, models)
     exit()
 

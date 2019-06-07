@@ -112,6 +112,14 @@ La desventaja de este análisis es que de que se pierde interpretabilidad de los
 
 Como a priori no sabemos con cuántas variables nos queremos quedar ni si es buena idea reducirlas, probaremos distintos porcentajes de varianza explicada (incluyendo el 100%, que supondría no reducir el número de variables) y se elegirá el mejor por valoración cruzada.
 
+Los resultados de la mejor selección de varianza para PCA en cada algoritmo ha sido:
+
+    * Perceptron: $0.95$;
+    * Red neuronal: $0.95$;
+    * Boosting: $0.8$;
+    * Random forest: $0.8$.
+
+
 
 # Normalización de datos
 
@@ -205,6 +213,9 @@ Los elementos más relevantes a la hora de definir una red neuronal son los sigu
     * Ratio adaptativo. Al principio del aprendizaje puede ser mejor aprender más rápido y conforme el algoritmo converja reducir dicho ratio para reducir la probabilidad descrita anteriormente.
 
 
+Los mejores parámetros obtenidos a partir de validación cruzada han sido ratio de aprendizaje constante, función de activación RELU y una única capa oculta con 100 neuronas.
+
+
 ## Boosting
 Boosting es un algoritmo que permite combinar algoritmos para obtener mejores resultados.
 A cada uno de los algoritmos débiles se le asigna un peso en función de la precisión que tenga, de esta forma mejores algoritmos tendrán más peso en el resultado final, pero no lo determinarán completamente.
@@ -255,6 +266,9 @@ Los elementos más relevantes a la hora de definir un clasificador random forest
     Para generar cada árbol no se eligen todos los predictores ya que si existen predictores muy fuertes entonces los árboles tendrían alta correlación. Se ha usado como valor óptimo la raíz cuadrada del número de variables.
 
 
+El mejor resultado con validación cruzada que se ha obtenido ha sido usando $160$ árboles.
+
+
 # Idoneidad de la regularización
 
 En este apartado se explican los tipos de regularización que se han planteado para cada algoritmo y sus parámetros relevantes.
@@ -273,25 +287,32 @@ En este apartado se explican los tipos de regularización que se han planteado p
 
     El parámetro $\alpha$ se estima mediante validación cruzada dentro del rango $[10^{-5}, 10^{-1}]$.
 
+
+Los mejores parámetros con validación cruzada han resultado ser Elasticnet con un $\alpha=0.0001$.
+
+
+
+
 ## Red neuronal
 
 * Alpha
 
     Parámetro $\alpha$ descrito en el Perceptron, usando regularización L2.
 
+El mejor parámetro que se ha obtenido con validación cruzada ha sido con $\alpha=0.1$.
+
 
 ## Boosting
 
 El ratio de aprendizaje se considera un parámetro de regularización en AdaBoost, ya que permite usar más estimadores base sin causar sobreentrenamiento ([ver enlace](https://pdfs.semanticscholar.org/8055/59b87c0efca148a9ffcd53f5296a51ad3183.pdf)).
 
-En este caso se han comparado los modelos con ratio de aprendizaje en el intervalo $[10^{-2}, 10^2]$.
+En este caso se han comparado los modelos con ratio de aprendizaje en el intervalo $[10^{-2}, 10^2]$ y el mejor resultado comparando con validación cruzada ha sido ratio de aprendizaje $0.1$.
+
 
 ## Random forest
-Una regularización que se puede hacer a random forest es limitar la altura máxima de cada árbol, de esta forma se minimiza el sobreajuste.
-TODO: citar
-http://zpascal.net/cvpr2015/Ren_Global_Refinement_of_2015_CVPR_paper.pdf
+Una regularización que se puede hacer a random forest es limitar la altura máxima de cada árbol, de esta forma se minimiza el sobreajuste ([ver enlace](http://zpascal.net/cvpr2015/Ren_Global_Refinement_of_2015_CVPR_paper.pdf)).
 
-Los parámetros considerados para la regularización son profundidades dentro del conjunto $\{15,25,50\}$ y la validación cruzada estimará el mejor de dichos parámetros.
+Los parámetros considerados para la regularización son profundidades dentro del conjunto $\{15,25,50\}$ y la validación cruzada ha estimado que el mejor de dichos parámetros es $25$.
 
 
 
