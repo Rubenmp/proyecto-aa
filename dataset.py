@@ -5,7 +5,6 @@
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
-#import seaborn as sns
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
 from sklearn.ensemble import IsolationForest
@@ -197,6 +196,7 @@ class DataSet:
 
 
     def plot_boxplot(self, data, index, show_outliers=False, file=None):
+        import seaborn as sns
         sns.boxplot(x=data[index], showfliers=show_outliers)
         plt.title(f'Boxplot de la variable {self.var_names[index]}')
         if file is not None:
@@ -204,6 +204,9 @@ class DataSet:
         plt.show()
 
     def nan_histogram(self):
+        """
+            Shows NaN distribution over variables
+        """
         xs = sum(np.array(list(map(lambda x: np.isnan(x),
                                    self.train_var)))) \
              / len(self.train_var)
