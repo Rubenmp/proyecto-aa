@@ -102,12 +102,6 @@ Esta aproximación puede aumentar la calidad del conjunto de entrenamiento al el
 
 
 
-## Normalización de datos
-
-Los datos se han normalizado mediante una transformación lineal para que cada variable tenga media nula y desviación estándar 1. El objetivo de esta transformación es que los modelos no estén sesgados hacia dar más peso a determinadas variables. De este modo, dos valores iguales para variables distintas representan valores igual de extremos.
-
-
-
 # Selección de un subconjunto de variables
 
 ## Análisis de componentes principales
@@ -121,6 +115,10 @@ La desventaja de este análisis es que de que se pierde interpretabilidad de los
 
 Como a priori no sabemos con cuántas variables nos queremos quedar ni si es buena idea reducirlas, probaremos distintos porcentajes de varianza explicada (incluyendo el 100%, que supondría no reducir el número de variables) y se elegirá el mejor por valoración cruzada.
 
+
+## Normalización de datos
+
+Los datos se han normalizado mediante una transformación lineal para que cada variable tenga media nula y desviación estándar 1. El objetivo de esta transformación es que los modelos no estén sesgados hacia dar más peso a determinadas variables. De este modo, dos valores iguales para variables distintas representan valores igual de extremos.
 
 
 # Función de pérdida
@@ -158,14 +156,15 @@ La curva ROC es una forma de igualar la importancia de clasificar correctamente 
 
 # Selección de la técnica paramétrica
 
-
-# Definición de los modelos y estimación de parámetros
-
-Cada modelo tiene diferentes parámetros que pueden ajustarse para minimizar su error. Por otro lado hay parámetros del preprocesado o procesado de los datos que puede ser deseable que cambien en función del modelo pero no son del propio modelo. Por ejemplo, puede convenir la agresividad óptima del PCA sea diferente en función del modelo. Estos parámetros, así como los de la regularización que apliquemos al modelo no forman parte estrictamente del modelo pero los trataremos como si lo fuesen desde el punto de vista de su estimación.
+Cada modelo tiene diferentes parámetros que pueden ajustarse para minimizar su error. Por otro lado hay parámetros del preprocesado o procesado de los datos que puede ser deseable que cambien en función del modelo pero no son del propio modelo. Por ejemplo, puede convenir que la agresividad óptima del PCA sea diferente en función del modelo. Estos parámetros, así como los de la regularización que apliquemos al modelo no forman parte estrictamente del modelo pero los trataremos como si lo fuesen desde el punto de vista de su estimación.
 
 Hay parámetros que pueden elegirse mediante el estudio del problema porque está bien establecido su valor óptimo en función de las carácterísticas del problema. Sin embargo, a veces la elección no está tan clara, por ello se puede llevar a cabo la selección de la mejor combinación de parámetros mediante validación cruzada. Una manera de hacerlo es hallar una estimación del error para cada posible combinación de parámetros y elegir la óptima. Sin embargo, a poco que crezca el número de parámetros que queremos ajustar el número de combinaciones se hace intratable.
 
 Para estos casos existen técnicas que estiman el error del modelo para una muestra aleatoria de combinaciones de parámetros y tratan de inferir a partir de esa muestra la combinación que minimiza el error. Esta técnica está implementada en la función `RandomizedSearchCV` de la librería Scikit Learn y es la que usaremos.
+
+
+# Definición de los modelos y estimación de parámetros
+
 
 ## Perceptron
 
@@ -269,27 +268,7 @@ Los elementos más relevantes a la hora de definir un clasificador random forest
     Para generar cada árbol no se eligen todos los predictores ya que si existen predictores muy fuertes entonces los árboles tendrían alta correlación. Se ha usado como valor óptimo la raíz cuadrada del número de variables.
     
 
-
-# Métrica del ajuste
-
-En este problema se especifica que el objetivo es minimizar el coste, definido como
-$$\text{coste\_total} = \text{coste\_1} \times \text{FP} + \text{coste\_2} \times \text{FN} \text{,}$$
-
-donde $\text{coste\_1} = 10$, $\text{coste\_2} = 500$ y $\text{FP}$ y $\text{FN}$ denotan, respectivamente, el número de datos incorrectamente clasificados por el modelo como positivos y negativos. Es decir, el coste de un falso negativo (no detectar la verdadera causa de la avería) es mucho mayor que el de un falso positivo (arreglar innecesariamente el APS).
-
-Por tanto, una métrica de la bondad del ajuste tiene que cumplir que su maximización sea equivalente a la minimización de $\text{coste\_total}$. Una posibilidad es usar una tasa de acierto ponderada de la siguiente manera:
-
-$$\text{tasa\_acierto\_ponderada} = \frac{50 \times \text{VP} + \text{VN}}{50 \times \text{P} + \text{N}} \text{,}$$
-
-donde $P$ y $N$ denotan el número de ejemplos datos positivos y negativos y $VP$ y $VN$ representan, respectivamente, el número de datos correctamente clasificados por el modelo como positivos y negativos.
-
-Podemos comprobar que minimizar $\text{coste\_total}$ es equivalente a maximizar $\text{tasa\_acierto\_ponderada}$. En efecto, maximizar $\text{tasa\_acierto\_ponderada}$ equivale a maximizar $50 \times \text{VP} + \text{VN} = 50 \times \text{P} - 50 \times \text{FP} + \text{N} - \text{FN}$ porque $50 \times \text{P} + \text{N}$ es constante, y por la misma razón es equivalente a minimizar $50 \times \text{FP} + \text{FN}$, que es obviamente lo mismo que minimizar $\text{coste\_total}$.
-
-La métrica $\text{tasa\_acierto\_ponderada}$ tiene la virtud de estar acotada entre 0, que representa que el coste es el máximo posible, y 1, que representa que el coste es el mínimo posible.
-
-TODO: terminar
-
-# Estimación del error
+# Idoneidad de la regularización
 
 # Valoración de los resultados
 
