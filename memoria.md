@@ -231,6 +231,35 @@ Random forest es una mejora sobre los árboles de decisión. Se construyen vario
 
 Una diferencia con los árboles de decisión es que la clasificación hecha por random forests es difícil de interpretar, pero esto no es un problema en este caso ya que las variables están inicialmente anonimizadas.
 
+Los elementos más relevantes a la hora de definir un clasificador random forest son los siguientes:
+
+* Número de árboles
+
+    Búsqueda del mejor número de árboles dentro del conjunto
+    
+    * $\{10, 40, 160\}$
+
+* Conjunto de entrenamiento para cada árbol
+
+    Muestra aleatoria con reemplazamiento de igual tamaño al conjunto de datos.
+
+* Criterio para medir la calidad de una ramificación
+
+    Elemento necesario a la hora de entrenar un árbol. 
+
+    * Gini. Hace un cálculo de las impurezas. Para cada rama se mide como $G=\sum_{i=1}^C p(i)(1-p(i))$, donde $C=2$ es el número de clases y $p(i)$ es la probabilidad de que al escoger un elemento al azar en dicha rama sea de la clase i-ésima. Una ramificación perfecta tendría una impureza Gini cero en ambas ramas. Después se calcula una suma ponderada de dichas impurezas en función de la cantidad de elementos de cada rama.
+
+    * Entropía. Criterio para calcula el grado de impredictibilidad de una variable aleatoria. Su fórmula es $Entropy = -\sum_{i=1}^C p(i)\log_2(p(i))$ y se usa para calcular la ganancia de información para cada ramificación, de forma que las mejores ramificaciones se apliquen primero.
+
+    Ambos criterios dan el mismo resultado en la inmensa mayoría de los casos, pero Gini tiene mejor coste computacional, por ello se ha elegido como criterio.
+    TODO: citar
+    https://www.unine.ch/files/live/sites/imi/files/shared/documents/papers/Gini_index_fulltext.pdf
+
+* Máximo de variables por árbol
+
+    Para generar cada árbol no se eligen todos los predictores ya que si existen predictores muy fuertes entonces los árboles tendrían alta correlación. Se ha usado como valor óptimo la raíz cuadrada del número de variables.
+    
+
 
 # Métrica del ajuste
 
