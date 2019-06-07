@@ -11,7 +11,7 @@ from sklearn.ensemble import IsolationForest
 from sklearn.utils.class_weight import compute_sample_weight
 from sklearn.manifold import TSNE
 from matplotlib.colors import ListedColormap
-
+import time
 
 class DataSet:
     POS_CLASS_WEIGHT = 500
@@ -29,7 +29,9 @@ class DataSet:
         self.test_var, self.test_output = None, None
         self.var_names = None
 
+        start_time = time.time()
         self.read_train_test(train_f, test_f)
+        print("--- %s seconds ---" % (time.time() - start_time))
 
     def read_train_test(self, train_f, test_f):
         """
@@ -69,9 +71,13 @@ class DataSet:
 
         # Impute missing values
         # TODO: si la estrategia de imputación es la de la media, se puede simplemente poner los NaN a 0 tras normalizar
+        start_time = time.time()
         self.__impute_missing_values()
+        print("--- %s seconds ---" % (time.time() - start_time))
 
-        # self.__remove_outliers()
+        start_time = time.time()
+        self.__remove_outliers()
+        print("--- %s seconds ---" % (time.time() - start_time))
 
         if normalization:
             self.__normalize()

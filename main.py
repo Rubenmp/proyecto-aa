@@ -98,107 +98,138 @@ def load_all_models(model_names):
 
 
 # Classification data
-ds = get_aps_dataset(small=True)
+ds = get_aps_dataset(small=False)
 ds.preprocess()
 
 """
 # Lectura de modelos
-model_names = ["Perceptron", "NeuralNet", "AdaBoost", "RandomForest"]
+model_names = ["Perceptron", "NeuralNetwork", "AdaBoost", "RandomForest"]
 models = load_all_models(model_names)
 """
 
+def tuning():
+    """
+    Estimación de parámetros
+    """
+    # Perceptron
+
+    pct_clf = Pipeline(steps=[
+        ('pca', PCA(svd_solver='full')),
+        ('poly', PolynomialFeatures(2)),
+        ('pct', Perceptron(max_iter=500, tol=.001, n_jobs=-1))
+    ])
+
+    pct_parameters = {
+        'pca__n_components': [.80, .90, .95, 1],
+        'pct__penalty': ['l1', 'l2', 'elasticnet'],
+        'pct__alpha': np.logspace(-5, -1, num=5, base=10),
+    }
+
+    # 3x20 = 398s
+    # start_time = time.time()
+    # pct_clf, score = tune_parameters(pct_clf, pct_parameters, ds, scorer,
+    #                                  verbose=True, n_iter=50)
+    # print("--- %s seconds ---" % (time.time() - start_time))
+    # save_model(pct_clf, 'Perceptron')
+
+    # Neural network
+    nn_clf = Pipeline(steps=[
+        ('pca', PCA(svd_solver='full')),
+        ('poly', PolynomialFeatures(2)),
+        ('mlp', MLPClassifier(solver='adam', max_iter=100, tol=0.001))
+    ])
+
+    nn_parameters = {
+        'pca__n_components': [.80, .90, .95, 1],
+        'mlp__hidden_layer_sizes': [(100,), (50, 50), (33, 33, 33)],
+        'mlp__activation': ['logistic', 'tanh', 'relu'],
+        'mlp__alpha': np.logspace(-4, -1, num=4, base=10),
+        'mlp__learning_rate': ['constant', 'adaptive']
+    }
+
+    # 3x10 = 1469
+    start_time = time.time()
+    # # {'pca__n_components': 0.95, 'mlp__learning_rate': 'constant',
+    # # 'mlp__hidden_layer_sizes': (100,), 'mlp__alpha': 0.1, 'mlp__
+    # # activation': 'relu'}
+    # nn_clf, _ = tune_parameters(nn_clf, nn_parameters, ds, scorer, verbose=True)
+    # save_model(nn_clf, 'NeuralNetwork')
+    # print("--- %s seconds ---" % (time.time() - start_time))
+
+    # AdaBoost
+    ab_clf = Pipeline(steps=[
+        ('pca', PCA(svd_solver='full')),
+        ('poly', PolynomialFeatures(2)),
+        ('ab', AdaBoostClassifier())
+    ])  #TODO: explicar SAMME.R
+
+    ab_parameters = {
+        'pca__n_components': [.80, .90, .95, 1],
+        'ab__learning_rate': np.logspace(-2, 2, num=5, base=10)
+    }
+
+    # # 3x5 = 3566s
+    # start_time = time.time()
+    # # {'pca__n_components': 0.8, 'ab__learning_rate': 0.1}
+    # ab_clf, score = tune_parameters(ab_clf, ab_parameters, ds, scorer, verbose=True)
+    # save_model(ab_clf, 'AdaBoost')
+    # print("--- %s seconds ---" % (time.time() - start_time))
+
+    # Random Forest
+
+    rf_clf = Pipeline(steps=[
+        ('pca', PCA(svd_solver='full')),
+        ('poly', PolynomialFeatures(2)),
+        ('rf', RandomForestClassifier(max_features='sqrt'))
+    ])
+
+    rf_parameters = {
+        'pca__n_components': [.80, .90, .95, 1],
+        'rf__n_estimators': [10, 40, 160],
+        'rf__criterion': ['gini', 'entropy']
+    }
+
+    # # 3 x 24
+    # start_time = time.time()
+    # # {'rf__n_estimators': 160, 'rf__criterion': 'gini', 'pca__n_components': 0.8}
+    # rf_clf, _ = tune_parameters(rf_clf, rf_parameters, ds, scorer, verbose=True, n_iter=50)
+    # save_model(rf_clf, 'RandomForest')
+    # print("--- %s seconds ---" % (time.time() - start_time))
+
+    models = {
+        "Perceptron": pct_clf,
+        "Neural network": nn_clf,
+        "AdaBoost": ab_clf,
+        "Random Forest": rf_clf
+    }
+
+    return models
 
 
-# Perceptron
-
-pct_clf = Pipeline(steps=[
-    ('pca', PCA(svd_solver='full')),
-    ('poly', PolynomialFeatures(2)),
-    ('pct', Perceptron(max_iter=500, tol=.001, n_jobs=-1))
-])
-
-pct_parameters = {
-    'pca__n_components': [.80, .90, .95, 1],
-    'pct__penalty': ['l1', 'l2', 'elasticnet'],
-    'pct__alpha': np.logspace(-5, -1, num=5, base=10),
-}
-
-# 3x20 = 398s
-# start_time = time.time()
-# pct_clf, score = tune_parameters(pct_clf, pct_parameters, ds, scorer,
-#                                  verbose=True, n_iter=50)
-# print("--- %s seconds ---" % (time.time() - start_time))
-# save_model(pct_clf, 'Perceptron')
+def yes_or_no(question):
+    while True:
+        ans = input(question)
+        if len(ans) > 0:
+            if ans[0] == "S" or ans[0] == "s":
+                ans = True
+                break
+            elif ans[0] == "N" or ans[0] == "n":
+                ans = False
+                break
+    return ans
 
 
-# Neural network
+do_tuning = yes_or_no("¿Desea hacer la estimación de los hiperparámetros para "
+                      "cada modelo? (Puede tardar algunas horas) [Sí/No] ")
 
-nn_clf = Pipeline(steps=[
-    ('pca', PCA(svd_solver='full')),
-    ('poly', PolynomialFeatures(2)),
-    ('mlp', MLPClassifier(solver='adam', max_iter=100, tol=0.001))
-])
-
-nn_parameters = {
-    'pca__n_components': [.80, .90, .95, 1],
-    'mlp__hidden_layer_sizes': [(100,), (50, 50), (33, 33, 33)],
-    'mlp__activation': ['tanh', 'relu'],
-    'mlp__alpha': np.logspace(-4, -1, num=4, base=10),
-    'mlp__learning_rate': ['constant', 'adaptive']
-}
-
-# 3x10 = 3219s
-# start_time = time.time()
-# # {'pca__n_components': 0.95, 'mlp__learning_rate': 'adaptive',
-# # 'mlp__hidden_layer_sizes': (33, 33, 33), 'mlp__alpha': 0.001,
-# # 'mlp__activation': 'relu'}
-# nn_clf, score = tune_parameters(nn_clf, nn_parameters, ds, scorer, verbose=True)
-# save_model(nn_clf, 'NeuralNet')
-# print("--- %s seconds ---" % (time.time() - start_time))
-
-
-# AdaBoost
-
-ab_clf = Pipeline(steps=[
-    ('pca', PCA(svd_solver='full')),
-    ('poly', PolynomialFeatures(2)),
-    ('ab', AdaBoostClassifier())
-])  #TODO: explicar SAMME.R
-
-ab_parameters = {
-    'pca__n_components': [.80, .90, .95, 1],
-    'ab__learning_rate': np.logspace(-2, 2, num=5, base=10)
-}
-
-# 3x5 = 3566s
-# start_time = time.time()
-# # {'pca__n_components': 0.8, 'ab__learning_rate': 0.1}
-# ab_clf, score = tune_parameters(ab_clf, ab_parameters, ds, scorer, verbose=True)
-# save_model(ab_clf, 'AdaBoost')
-# print("--- %s seconds ---" % (time.time() - start_time))
-
-# Random Forest
-
-rf_clf = Pipeline(steps=[
-    ('pca', PCA(svd_solver='full')),
-    ('poly', PolynomialFeatures(2)),
-    ('rf', RandomForestClassifier(max_features='sqrt'))
-])
-
-rf_parameters = {
-    'pca__n_components': [.80, .90, .95, 1],
-    'rf__n_estimators': [10, 40, 160],
-    'rf__criterion': ['gini', 'entropy']
-}
-
-# 4-5 min. de media
-start_time = time.time()
-rf_clf, _ = tune_parameters(rf_clf, rf_parameters, ds, scorer, verbose=True, n_iter=5)
-save_model(rf_clf, 'RandomForest')
-
-models = {
-    "Perceptron": pct_clf,
-    "Neural network": nn_clf,
-    "AdaBoost": ab_clf,
-    "Random Forest": rf_clf
-}
+if do_tuning:
+    tuning()
+else:
+    do_training = yes_or_no("¿Desea hacer el entrenamiento con los parámetros "
+                            "que figuran en la memoria de la práctica? (Puede "
+                            "tardar unos minutos; alternativamente puede leer "
+                            "los modelos ya entrenados) [Sí/No] ")
+    if do_training:
+        pass
+    else:
+        print("Procederemos a leer los modelos ya entrenados.")
