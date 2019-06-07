@@ -301,7 +301,11 @@ https://pdfs.semanticscholar.org/8055/59b87c0efca148a9ffcd53f5296a51ad3183.pdf
 En este caso se han comparado los modelos con ratio de aprendizaje en el intervalo $[10^{-2}, 10^2]$.
 
 ## Random forest
+Una regularización que se puede hacer a random forest es limitar la altura máxima de cada árbol, de esta forma se minimiza el sobreajuste.
+TODO: citar
+http://zpascal.net/cvpr2015/Ren_Global_Refinement_of_2015_CVPR_paper.pdf
 
+Los parámetros considerados para la regularización son profundidades dentro del conjunto $\{15,25,50\}$ y la validación cruzada estimará el mejor de dichos parámetros.
 
 # Valoración de los resultados
 
