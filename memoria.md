@@ -129,26 +129,31 @@ Como a priori no sabemos con cuántas variables nos queremos quedar ni si es bue
 
 En este problema no tenemos ningún tipo de información acerca del significado de las variables originales, por tanto es imposible saber qué tipo de transformaciones de los datos son *naturales* o razonables.
 
-Hemos aplicado el tipo de transformación más simple, la polinómica. Hemos probado con transformaciones de grado 2 y 3 usando validación cruzada y los resultados con grado 2 son tan buenos como con grado 3, de modo que nos quedamos con el menor grado por ser una transformación más simple.
+Se ha aplicado la transformación más simple, una polinómica con grado $2$ y otra con grado $3$. La comparación mediante validación cruzada muestra que los resultados son similares, por ello se elige el menor grado por ser una transformación más simple, ya que es esperable que podrá generalizar mejor.
 
 ##  Estimación del error
 
-En este problema se especifica que el objetivo es minimizar el coste, definido como
-$$\text{coste\_total} = \text{coste\_1} \times \text{FP} + \text{coste\_2} \times \text{FN} \text{,}$$
+En el problema se especifica que el objetivo es minimizar el coste, definido como
+$$\text{coste\_total} = \text{coste\_fp} \times \text{FP} + \text{coste\_fn} \times \text{FN} \text{,}$$
 
-donde $\text{coste\_1} = 10$, $\text{coste\_2} = 500$ y $\text{FP}$ y $\text{FN}$ denotan, respectivamente, el número de datos incorrectamente clasificados por el modelo como positivos y negativos. Es decir, el coste de un falso negativo (no detectar la verdadera causa de la avería) es mucho mayor que el de un falso positivo (arreglar innecesariamente el APS).
+donde $\text{coste\_fp} = 10$, $\text{coste\_fn} = 500$ y $\text{FP}$ y $\text{FN}$ denotan, respectivamente, el número de datos incorrectamente clasificados por el modelo como positivos y negativos.
+Es decir, el coste de un falso negativo (no detectar la verdadera causa de la avería) es mucho mayor que el de un falso positivo (arreglar innecesariamente el APS).
 
-Por tanto, una métrica de la bondad del ajuste tiene que cumplir que su maximización sea equivalente a la minimización de $\text{coste\_total}$. Una posibilidad es usar una tasa de acierto ponderada de la siguiente manera:
+Por tanto, una métrica de la bondad del ajuste tiene que cumplir que su maximización sea equivalente a la minimización de $\text{coste\_total}$. Una posibilidad es usar una tasa de acierto ponderada,
 
 $$\text{tasa\_acierto\_ponderada} = \frac{50 \times \text{VP} + \text{VN}}{50 \times \text{P} + \text{N}} \text{,}$$
 
-donde $P$ y $N$ denotan el número de ejemplos datos positivos y negativos y $VP$ y $VN$ representan, respectivamente, el número de datos correctamente clasificados por el modelo como positivos y negativos.
+donde $P$ y $N$ denotan el número de ejemplos positivos y negativos respectivamente, y $VP$ y $VN$ representan el número de datos correctamente clasificados por el modelo como positivos y negativos.
 
-Podemos comprobar que minimizar $\text{coste\_total}$ es equivalente a maximizar $\text{tasa\_acierto\_ponderada}$. En efecto, maximizar $\text{tasa\_acierto\_ponderada}$ equivale a maximizar $50 \times \text{VP} + \text{VN} = 50 \times \text{P} - 50 \times \text{FP} + \text{N} - \text{FN}$ porque $50 \times \text{P} + \text{N}$ es constante, y por la misma razón es equivalente a minimizar $50 \times \text{FP} + \text{FN}$, que es obviamente lo mismo que minimizar $\text{coste\_total}$.
+Podemos comprobar que minimizar $\text{coste\_total}$ es equivalente a maximizar $\text{tasa\_acierto\_ponderada}$. En efecto, maximizar $\text{tasa\_acierto\_ponderada}$ equivale a maximizar su numerador,
+$$50 \times \text{VP} + \text{VN} = 50 \times \text{P} - 50 \times \text{FP} + \text{N} - \text{FN}$$
+porque su denominador, $50 \times \text{P} + \text{N}$, es constante, y por la misma razón es equivalente a minimizar $50 \times \text{FP} + \text{FN}$, que es obviamente lo mismo que minimizar $\text{coste\_total}$.
 
 La métrica $\text{tasa\_acierto\_ponderada}$ tiene la virtud de estar acotada entre 0, que representa que el coste es el máximo posible, y 1, que representa que el coste es el mínimo posible.
 
-TODO: terminar
+Hay otra métrica usada para problemas con clases muy desbalanceadas llamada curva ROC (Receiver Operating Characteristic). Dado un clasificador se crea una curva que muestra su rendimiento para todos los umbrales de clasificación. Cada punto de dicha curva representa la tasa de falsos positivos en el eje de abscisas y la tasa de falsos negativos en el eje de ordenadas. Posteriormente se calcula el área bajo dicha curva, un área mayor representa mayor robustez del modelo.
+
+La curva ROC es una forma de igualar la importancia de clasificar correctamente cada clase, ya que, de otra forma, clasificar todos los ejemplos con la clase mayoritaria en problemas muy desbalanceados podría considerarse un buen ajuste, y no tiene por qué serlo. Sin embargo, en este problema es preferible usar coste_total ya que se especifica claramente que es la función que se quiere minimizar.
 
 
 # Selección de la técnica paramétrica
