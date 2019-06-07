@@ -61,7 +61,7 @@ Esta estrategia consiste en asignar valores donde falten en función del resto d
 Esto se puede hacer calculando los valores en función de los valores de la misma variable para el resto de ejemplos (imputación univariante) o en función de los valores del resto de variables de ese ejemplo (imputación multivariante).
 La imputación univariante se hace con algún estadístico de los valores de cada variable, como la media, la moda o la mediana.
 
-Dado que los algoritmos de imputación multivariante de la librería Scikit Learn están en fase experimental, solo probaremos con la media y la mediana. Usando validación cruzada hemos llegado a la conclusión de que funciona mejor usar la media. TODO: mostrar datos
+Dado que los algoritmos de imputación multivariante de la librería Scikit Learn están en fase experimental, solo probaremos con la media y la mediana. Usando validación cruzada hemos llegado a la conclusión de que funciona mejor usar la media.
 
 ## Tratamiento de outliers
 
@@ -288,7 +288,18 @@ En este caso se han comparado los modelos con ratio de aprendizaje en el interva
 
 ## Random forest
 
-
 # Valoración de los resultados
+
++---------------+------------------------+---------------+
+| Modelo        | Score de entrenamiento | Score de test |
++---------------+------------------------+---------------+
+| Perceptron    |                        |               |
++---------------+------------------------+---------------+
+| Red neuronal  |                        |               |
++---------------+------------------------+---------------+
+| AdaBoost      |                        |               |
++---------------+------------------------+---------------+
+| Random Forest |                        |               |
++---------------+------------------------+---------------+
 
 # Justificación de la calidad del modelo
