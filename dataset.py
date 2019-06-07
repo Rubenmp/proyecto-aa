@@ -197,6 +197,9 @@ class DataSet:
         plt.show()
 
     def nan_histogram(self):
+        """
+            Shows NaN distribution over variables
+        """
         xs = sum(np.array(list(map(lambda x: np.isnan(x),
                                    self.train_var)))) \
              / len(self.train_var)

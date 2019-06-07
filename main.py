@@ -24,7 +24,12 @@ import time
 
 print("Problema de clasificación APS Failure at Scania Trucks Data Set\n")
 
+model_names = ("Perceptron", "Neural network",
+                                      "AdaBoost", "Random Forest")
 
+########################
+#    Score functions
+########################
 def score_f(y_true, y_pred):
     """
         Score function for hyperparameter optimization
@@ -37,6 +42,10 @@ def score_f(y_true, y_pred):
 scorer = make_scorer(score_f)
 
 
+
+########################
+#  Auxiliary functions
+########################
 def resample(X, y):
     X_res, y_res = list(X), list(y)
     for x, c in zip(X, y):
@@ -88,6 +97,11 @@ def tune_parameters(classifier, parameters, dataset, scorer, n_iter=10,
     return classifier
 
 
+
+########################
+#     Model storage
+########################
+
 def model_file(name):
     return './models/' + name + '.model'
 
@@ -107,6 +121,10 @@ def load_all_models(model_names):
 
     return models
 
+
+###################################
+#  Search of best hyperparameters
+###################################
 
 def tuning(ds):
     """
@@ -270,6 +288,25 @@ def train(ds):
     return models
 
 
+
+
+def results(ds):
+    models = load_all_models(model_names)
+    for name, model in models.items():
+        print(name)
+        train_pred = model.predict(ds.train_var)
+        train_acc = score_f(ds.train_output, train_pred)
+        print(f"Score en training: {train_acc}")
+
+        # Results in test
+        test_pred = model.predict(ds.test_var)
+        test_acc = score_f(ds.test_output, test_pred)
+        print(f"Score en test: {test_acc}")
+
+
+        print("\n")
+
+
 def yes_or_no(question):
     while True:
         ans = input(question)
@@ -283,10 +320,14 @@ def yes_or_no(question):
     return ans
 
 
+
 def main():
     # Classification data
-    ds = get_aps_dataset(small=False)
+    ds = get_aps_dataset(small=True)
     ds.preprocess()
+
+    #results(ds)
+    #exit()
 
     do_tuning = yes_or_no("¿Desea hacer la estimación de los hiperparámetros "
                           "para cada modelo? (Puede tardar algunas horas) "
@@ -304,8 +345,7 @@ def main():
             models = train(ds)
         else:
             print("Procederemos a leer los modelos ya entrenados.")
-            models = load_all_models(("Perceptron", "Neural network",
-                                      "AdaBoost", "Random Forest"))
+            models = load_all_models(model_names)
 
     for model_name in models:
         model = models[model_name]
