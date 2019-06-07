@@ -338,15 +338,8 @@ def show_results(ds, p_models=None):
         test_acc = score_f(ds.test_output, test_pred)
         test_results.append(test_acc)
         print(f"Score en test: {test_acc}")
-        """
-        # Confusion matrix
-        tn, fp, fn, tp = confusion_matrix(ds.test_output, test_pred).ravel()
-        confusion_matrix.append( (tn, fp, fn, tp) )
-        print(f"Los valores de la matriz de confusión son (true negative, false positive, false negative, true positive): ({tn}, {fp}, {fn}, tp)")
-        """
+        
         print("\n")
-
-    print_results_table(train_results, test_results)
 
 
 def yes_or_no(question):
@@ -373,10 +366,6 @@ def main():
     ds = get_aps_dataset(small=True)
     ds.preprocess()
 
-    models = load_all_models(model_names)
-    show_results(ds, models)
-    exit()
-
     do_tuning = yes_or_no("¿Desea hacer la estimación de los hiperparámetros "
                           "para cada modelo? (Puede tardar algunas horas) "
                           "[Sí/No] ")
@@ -395,20 +384,7 @@ def main():
             print("Procederemos a leer los modelos ya entrenados.")
             models = load_all_models(model_names)
 
-    for model_name in models:
-        model = models[model_name]
-        if do_tuning:
-            score = model.score(ds.test_var, ds.test_output)
-            score_train = model.score(ds.train_var, ds.train_output)
-        else:
-            score = model.score(ds.test_var, ds.test_output,
-                                sample_weight=ds.get_sample_weight_test())
-            score_train = model.score(ds.train_var, ds.train_output,
-                                      sample_weight=ds.get_sample_weight_train())
-        preds = model.predict(ds.test_var)
-        print(score_f(ds.test_output, preds))
-        print(f"Precisión ponderada del modelo {model_name}: "
-              f"{score, score_train}", )
+    show_results(ds, p_models=models)
 
 
 if __name__ == "__main__":
