@@ -5,8 +5,7 @@
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import PolynomialFeatures, StandardScaler
+from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
 from sklearn.ensemble import IsolationForest
 from sklearn.utils.class_weight import compute_sample_weight
@@ -14,13 +13,13 @@ from sklearn.manifold import TSNE
 from matplotlib.colors import ListedColormap
 
 
-
 class DataSet:
     POS_CLASS_WEIGHT = 500
     NEG_CLASS_WEIGHT = 10
     POSITIVE_CLASS = 1
     NEGATIVE_CLASS = -1
-    WEIGHTS_DIC = {POSITIVE_CLASS: POS_CLASS_WEIGHT, NEGATIVE_CLASS: NEG_CLASS_WEIGHT}
+    WEIGHTS_DIC = {POSITIVE_CLASS: POS_CLASS_WEIGHT,
+                   NEGATIVE_CLASS: NEG_CLASS_WEIGHT}
     
     def __init__(self, train_f, test_f):
         """
@@ -32,14 +31,12 @@ class DataSet:
 
         self.read_train_test(train_f, test_f)
 
-
     def read_train_test(self, train_f, test_f):
         """
             Read training and test data from files
         """
         self.train_var, self.train_output = self.read_file_data(train_f)
         self.test_var, self.test_output = self.read_file_data(test_f)
-
 
     def read_file_data(self, file):
         """
@@ -50,7 +47,7 @@ class DataSet:
         reader = list(csv.reader(csv_file))[20:]
         reader = np.array(reader)
 
-        var_names = [l for l in reader[0, 1:] ]
+        var_names = [l for l in reader[0, 1:]]
 
         variables = np.array(
             list(list(map(lambda x: np.nan if x == 'na' else np.float(x), l))
@@ -64,7 +61,6 @@ class DataSet:
 
         return variables, output
 
-
     def preprocess(self, show_evolution=True, normalization=True):
         """
             Preprocessing of training and test data.
@@ -75,11 +71,10 @@ class DataSet:
         # TODO: si la estrategia de imputación es la de la media, se puede simplemente poner los NaN a 0 tras normalizar
         self.__impute_missing_values()
 
-        self.__remove_outliers()
+        # self.__remove_outliers()
 
         if normalization:
             self.__normalize()
-
 
     def __impute_missing_values(self):
         """
@@ -90,7 +85,6 @@ class DataSet:
         imp.fit(self.train_var)
         self.train_var = imp.transform(self.train_var)
         self.test_var = imp.transform(self.test_var)
-
 
     def __remove_outliers(self, show_evolution=False):
         """
@@ -117,12 +111,11 @@ class DataSet:
         random_indexes = [i for i in range(len(classes))]
         np.random.shuffle(random_indexes)
 
-        self.train_var    = data[random_indexes]
+        self.train_var = data[random_indexes]
         self.train_output = classes[random_indexes]
 
         if show_evolution:
             print("After. Train shape " + str(self.train_var.shape) + ", outputs " + str(len(self.train_output)))
-
 
     @staticmethod
     def __remove_outliers_by_class(data, classes, obj_class):
@@ -146,7 +139,6 @@ class DataSet:
 
         return new_data
 
-
     def __normalize(self):
         """
             Normalize data
@@ -159,7 +151,6 @@ class DataSet:
         self.train_var = sc.transform(self.train_var)
         self.test_var  = sc.transform(self.test_var)
 
-
     # Getter
     def get_sample_weight(self, train=True):
         if train:
@@ -167,14 +158,11 @@ class DataSet:
         else:
             return compute_sample_weight(DataSet.WEIGHTS_DIC, self.test_output)
 
-
     def get_sample_weight_train(self):
         return self.get_sample_weight()
-        
 
     def get_sample_weight_test(self):
-        return self.get_sample_weight(train=False)      
-
+        return self.get_sample_weight(train=False)
 
     # Plotting functions
     def scatter(self, show=True):
@@ -192,17 +180,15 @@ class DataSet:
 
         if show:
             plt.show()
-    
 
     @staticmethod
     def plot_boxplot_with_outliers(data, index, file=None):
         import seaborn as sns
         sns.boxplot(x=data[index])
         plt.title(f'Boxplot de la variable aa_000')
-        if file != None:
+        if file is not None:
             plt.savefig(file)
         plt.show()
-
 
     def nan_histogram(self):
         xs = sum(np.array(list(map(lambda x: np.isnan(x),
@@ -221,6 +207,7 @@ def get_sample_weight(y_true):
     w_dic = DataSet.WEIGHTS_DIC
     sample_weight=compute_sample_weight(w_dic, y_true)
     return sample_weight
+
 
 def get_aps_dataset(small=False):
     data_folder = "./datos"

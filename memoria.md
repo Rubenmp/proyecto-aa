@@ -14,17 +14,19 @@ lang: es
 
 # Definición del problema
 
-En este trabajo trataremos el conjunto de datos *APS failure at Scania Trucks*. Este conjunto de datos contiene información sobre el funcionamiento del sistema de presión del aire (*APS*) de camiones Scania, que se encarga de funciones como el frenado. 
+En este trabajo trataremos el conjunto de datos *APS failure at Scania Trucks*. Este conjunto de datos contiene información sobre el funcionamiento del sistema de presión del aire (*APS*) de camiones Scania, que se encarga de funciones como el frenado.
+
 Se recogen 171 variables seleccionadas por expertos en casos de averías y se asigna a cada dato una clase *positiva* (la avería está relacionada con el APS) o *negativa* (la avería no está relacionada con el APS). El conjunto de entrenamiento proporcionado tiene 60000 ejemplos y el de test tiene 16000.
 
-El problema consiste en predecir la clase de un ejemplo a partir de los atributos, por tanto es un problema de **clasificación**. 
+El problema consiste en predecir la clase de un ejemplo a partir de los atributos, por tanto es un problema de **clasificación**.
+
 Según se especifica en la descripción del conjunto de datos, no todos los errores de clasificación tienen el mismo coste: el coste de los falsos positivos es 50 veces mayor que el de los falsos negativos.
 
 Otra características que cabe señalar es la cantidad de atributos que faltan (al 99% de los datos le falta algún atributo), que toda las variables están anonimizadas por motivos corporativos y que la distribución de clases está muy desbalanceada: solo el 1,7% de los ejemplos del conjunto de entrenamiento pertenecen a la clase positiva.
 
 Trataremos de diseñar un modelo para este problema de cada uno de los siguientes tipos:
 
-* Perceptrón;
+* Perceptron;
 * Red neuronal;
 * Random forest;
 * AdaBoost.
@@ -54,22 +56,22 @@ Es razonable plantearse la posibilidad de eliminar variables con valores descono
 
 ![](./imgs/histograma_nan.png){ width=85% }
 
-Optamos por una estrategia de imputación de valores desconocidos. 
-Esta estrategia consiste en asignar valores donde falten en función del resto de valores del conjunto de datos. 
-Esto se puede hacer calculando los valores en función de los valores de la misma variable para el resto de ejemplos (imputación univariante) o en función de los valores del resto de variables de ese ejemplo (imputación multivariante). 
+Optamos por una estrategia de imputación de valores desconocidos.
+Esta estrategia consiste en asignar valores donde falten en función del resto de valores del conjunto de datos.
+
+Esto se puede hacer calculando los valores en función de los valores de la misma variable para el resto de ejemplos (imputación univariante) o en función de los valores del resto de variables de ese ejemplo (imputación multivariante).
 La imputación univariante se hace con algún estadístico de los valores de cada variable, como la media, la moda o la mediana.
 
-TODO: discutir cuál y por qué
-
+Dado que los algoritmos de imputación multivariante de la librería Scikit Learn están en fase experimental, solo probaremos con la media y la mediana. Usando validación cruzada hemos llegado a la conclusión de que funciona mejor usar la media. TODO: mostrar datos
 
 ## Tratamiento de outliers
 
-Los datos a veces pueden tener errores, por ello es deseable hacer un tratamiento previo de los datos problemáticos. 
+Los datos a veces pueden tener errores, por ello es deseable hacer un tratamiento previo de los datos problemáticos.
 Hay dos tipos principales de análisis de outliers, univariable y multivariable.
 
 Cuando se tratan los outliers en problemas de clasificación hay que tener cuidado, no se deben aplicar directamente las técnicas de detección de outliers sin tener en cuenta la clase de cada elemento.
-Si se hace el tratamiento de outliers ignorando la clase en un conjunto muy desbalanceado se corre el riesgo de que la mayoría de elementos de la clase minoritaria sean clasificados como outliers. 
-En nuestro conjunto de entrenamiento si se aplica una detección de outliers sin considerar la clase obtenemos $2785$ outliers (de un total de $60.000$ elementos), $859$ de ellos tienen clase positiva (de un total de 1.000 casos positivos), estaríamos eliminando la mayoría de elementos de la clase positiva. 
+Si se hace el tratamiento de outliers ignorando la clase en un conjunto muy desbalanceado se corre el riesgo de que la mayoría de elementos de la clase minoritaria sean clasificados como outliers.
+En nuestro conjunto de entrenamiento si se aplica una detección de outliers sin considerar la clase obtenemos $2785$ outliers (de un total de $60.000$ elementos), $859$ de ellos tienen clase positiva (de un total de 1.000 casos positivos), estaríamos eliminando la mayoría de elementos de la clase positiva.
 Por este motivo es deseable buscar los outliers entre los casos positivos y luego entre los negativos de forma independiente.
 
 TODO: citar justificación separar tratamiento de outliers por clases
@@ -86,33 +88,36 @@ TODO: citar imagen
 https://cs.nju.edu.cn/zhouzh/zhouzh.files/publication/icdm08b.pdf
 
 
-El número de iteraciones es deseable adaptarlo en función del problema, por ejemplo respecto al número de variables del conjunto, usaremos $\{numero de variables\}*5$ iteraciones para tener un ajuste suficiente para el problema. 
-Al tener suficientes datos podemos permitirnos que la muestra aleatoria que se usa para entrenar cada árbol sea sin reemplazamiento. 
+El número de iteraciones es deseable adaptarlo en función del problema, por ejemplo respecto al número de variables del conjunto, usaremos $\{numero de variables\}*5$ iteraciones para tener un ajuste suficiente para el problema.
+Al tener suficientes datos podemos permitirnos que la muestra aleatoria que se usa para entrenar cada árbol sea sin reemplazamiento.
 La proporción esperada de outliers está fijada como se especifica en el paper original, alrededor del 10% de los datos.
 A continuación se visualiza la evolución de su distribución de una variable.
 
 ![](./imgs/boxplot_aa_000.png){ width=50% } ![](./imgs/new_boxplot_aa_000.png){ width=50% }
 
-En el primer gráfico se han calculado los candidatos a outliers respecto a una variable, todo esto dentro del conjunto de entrenamiento y con la clase positiva, aplicar detección de outliers sobre el test no tiene sentido. 
-Se ha realizado el boxplot sin tener en cuenta dichos candidatos y se han añadido después como rombos. 
+En el primer gráfico se han calculado los candidatos a outliers respecto a una variable, todo esto dentro del conjunto de entrenamiento y con la clase positiva, aplicar detección de outliers sobre el test no tiene sentido.
+Se ha realizado el boxplot sin tener en cuenta dichos candidatos y se han añadido después como rombos.
 En la segunda imagen se han eliminado los outliers usando Isolation Forests.
 Teniendo en cuenta esta aproximación puede aumentar la calidad del conjunto de entrenamiento.
 
 
 
+## Normalización de datos
+
+Los datos se han normalizado mediante una transformación lineal para que cada variable tenga media nula y desviación estándar 1. El objetivo de esta transformación es que los modelos no estén sesgados hacia dar más peso a determinadas variables. De este modo, dos valores iguales para variables distintas representan valores igual de extremos.
+
 # Selección de un subconjunto de variables
 
 ## Análisis de componentes principales
 
-Existen diferentes técnicas para reducir la dimensionalidad de los datos. Se podrían eliminar las variables con alta correlación o varianza muy baja. 
-Otra técnica más adecuada es PCA (Principal Component Analysis), que considera nuevas variables (combinaciones lineales de las originales) no correlacionadas llamadas componentes principales, ordenadas por la cantidad de varianza original que describen. 
-Posteriormente, se elige el porcentaje de varianza que se quiere poder explicar y se eliminan las componentes principales que no sean relevantes, por ello se trata de una técnica de reducción de la dimensionalidad.
+Existen diferentes técnicas para reducir la dimensionalidad de los datos. Se podrían eliminar las variables con alta correlación o varianza muy baja.
+Otra técnica más adecuada es PCA (Principal Component Analysis), que considera nuevas variables (combinaciones lineales de las originales) no correlacionadas llamadas componentes principales, ordenadas por la cantidad de varianza original que describen.
 
-Una ventaja de esta técnica es que ayuda a reducir el sobreajuste, al quedarse con la información esencial del problema. 
-La desventaja de este análisis es que de que se pierde interpretabilidad de los datos al optimizar con combinaciones lineales de los mismos. 
-En este caso no nos importa esta desventaja ya que las variables iniciales estaban ya anonimizadas. 
-No existe un porcentaje de varianza perfecto con el que determinar el número de componentes principales con el que debemos quedarnos, por ello se probará con diferentes valores en validación cruzada estratificada.
+Posteriormente, se elige el porcentaje de varianza que se quiere poder explicar y se eliminan el máximo número de variables posible que mantenga como mínimo ese porcentaje de varianza explicada, por ello se trata de una técnica de reducción de la dimensionalidad.
 
+La desventaja de este análisis es que de que se pierde interpretabilidad de los datos al optimizar con combinaciones lineales de los mismos. En este caso no nos importa esta desventaja ya que las variables iniciales estaban ya anonimizadas.
+
+Como a priori no sabemos con cuántas variables nos queremos quedar ni si es buena idea reducirlas, probaremos distintos porcentajes de varianza explicada (incluyendo el 100%, que supondría no reducir el número de variables) y elegiremos el mejor por valoración cruzada.
 
 
 
@@ -120,7 +125,9 @@ No existe un porcentaje de varianza perfecto con el que determinar el número de
 
 ## Selección de clases de funciones
 
-TODO: decidir cuáles (comentar que la anonimización de las variables hace que vayamos a ciegas)
+En este problema no tenemos ningún tipo de información acerca del significado de las variables originales, por tanto es imposible saber qué tipo de transformaciones de los datos son *naturales* o razonables.
+
+Hemos aplicado el tipo de transformación más simple, la polinómica. Hemos probado con transformaciones de grado 2 y 3 usando validación cruzada y los resultados con grado 2 son tan buenos como con grado 3, de modo que nos quedamos con el menor grado por ser una transformación más simple.
 
 ##  Estimación del error
 
@@ -147,27 +154,24 @@ TODO: terminar
 
 # Definición de los modelos y estimación de parámetros
 
+Cada modelo tiene diferentes parámetros que pueden ajustarse para minimizar su error. Por otro lado hay parámetros del preprocesado o procesado de los datos que puede ser deseable que cambien en función del modelo pero no son del propio modelo. Por ejemplo, puede convenir la agresividad óptima del PCA sea diferente en función del modelo. Estos parámetros, así como los de la regularización que apliquemos al modelo no forman parte estrictamente del modelo pero los trataremos como si lo fuesen desde el punto de vista de su estimación.
 
-Cada modelo tiene diferentes parámetros que pueden ajustarse para mejorar su precisión. Por otro lado hay parámetros que puede ser deseable que cambien en función del modelo pero no ser del propio modelo, por ejemplo, el porcentaje de varianza con el que queremos quedarnos tras aplicar análisis de componentes principales.
+Hay parámetros que pueden elegirse mediante el estudio del problema porque está bien establecido su valor óptimo en función de las carácterísticas del problema. Sin embargo, a veces la elección no está tan clara, por ello se puede llevar a cabo la selección de la mejor combinación de parámetros mediante validación cruzada. Una manera de hacerlo es hallar una estimación del error para cada posible combinación de parámetros y elegir la óptima. Sin embargo, a poco que crezca el número de parámetros que queremos ajustar el número de combinaciones se hace intratable.
 
-Hay parámetros que pueden elegirse mediante el estudio del problema. 
-Sin embargo, a veces la elección no está tan clara, por ello se puede llevar a cabo optimización de hiperparámetros. 
-En esta técnica se elige para cada hiperparámetro un conjunto de valores con los que probar y se busca la mejor combinación de estos mediante validación cruzada dentro del conjunto de entrenamiento. 
-Si hay muchos hiperparámetros que ajustar puede que por tiempo de cómputo no interese probar con todas las combinaciones, por ello existen estimadores de hiperparámetros que hacen búsquedas aleatorizadas.
+Para estos casos existen técnicas que estiman el error del modelo para una muestra aleatoria de combinaciones de parámetros y tratan de inferir a partir de esa muestra la combinación que minimiza el error. Esta técnica está implementada en la función `RandomizedSearchCV` de la librería Scikit Learn y es la que usaremos.
 
+## Perceptron
 
-## Perceptrón
-El algoritmo lineal elegido es el perceptrón, una simulación matemática de una neurona. 
-El perceptrón tiene unas entradas con unos pesos asociados, combina dichas entradas y después aplica una función de activación. Esto genera una salida que puede ser única, como tendremos en este caso, o múltiple, en un caso más general.
+El algoritmo lineal elegido es el Perceptron. El Percetron es un algoritmo que trata de encontrar un separador lineal de los datos partiendo de un vector inicial de pesos y modificándolo iterativamente para corregir los fallos de clasificación. Por sí mismo no tiene parámetros, pero sí debemos elegir el mejor PCA y los parámetros de la regularización.
 
-El perceptrón aprende a mejorar su precisión ajustando los pesos con la propagación de errores hacia atrás. Para cada ejemplo se calcula la salida que tendría y se modifican los pesos para obtener una salida más parecida a la real. El problema del perceptrón es que si los datos no son separables mediante un hiperplano su precisión no será demasiado buena.
-
+Para el PCA obtenemos que lo mejor es aplicar una reducción que explique el TODO:XX de la varianza de la muestra original. En el caso de la regularización,
 
 ## Red neuronal
+
 La combinación de perceptrones permite superar la barrera de los discriminadores lineales.
 Una red neuronal consiste en una serie de capas de neuronas, cada una conectada con las capas adyacentes. Al igual que en el perceptrón la primera capa representa la entrada, la última capa la salida y el objetivo último es ajustar los pesos de la red.
 
-El teorema de aproximación universal afirma que una red neuronal con una capa oculta puede aproximar cualquier función continua con entradas dentro de un determinado rango. 
+El teorema de aproximación universal afirma que una red neuronal con una capa oculta puede aproximar cualquier función continua con entradas dentro de un determinado rango.
 En problemas reales puede haber ruido que nos impida una aproximación perfecta, además de otros factores como número de datos insuficiente.
 
 Los elementos más relevantes a la hora de definir una red neuronal son los siguientes:
@@ -221,7 +225,26 @@ Random forest es una mejora sobre los árboles de decisión. Se construyen vario
 Una diferencia con los árboles de decisión es que la clasificación hecha por random forests es difícil de interpretar, pero esto no es un problema en este caso ya que las variables están inicialmente anonimizadas.
 
 
+# Métrica del ajuste
 
+En este problema se especifica que el objetivo es minimizar el coste, definido como
+$$\text{coste\_total} = \text{coste\_1} \times \text{FP} + \text{coste\_2} \times \text{FN} \text{,}$$
+
+donde $\text{coste\_1} = 10$, $\text{coste\_2} = 500$ y $\text{FP}$ y $\text{FN}$ denotan, respectivamente, el número de datos incorrectamente clasificados por el modelo como positivos y negativos. Es decir, el coste de un falso negativo (no detectar la verdadera causa de la avería) es mucho mayor que el de un falso positivo (arreglar innecesariamente el APS).
+
+Por tanto, una métrica de la bondad del ajuste tiene que cumplir que su maximización sea equivalente a la minimización de $\text{coste\_total}$. Una posibilidad es usar una tasa de acierto ponderada de la siguiente manera:
+
+$$\text{tasa\_acierto\_ponderada} = \frac{50 \times \text{VP} + \text{VN}}{50 \times \text{P} + \text{N}} \text{,}$$
+
+donde $P$ y $N$ denotan el número de ejemplos datos positivos y negativos y $VP$ y $VN$ representan, respectivamente, el número de datos correctamente clasificados por el modelo como positivos y negativos.
+
+Podemos comprobar que minimizar $\text{coste\_total}$ es equivalente a maximizar $\text{tasa\_acierto\_ponderada}$. En efecto, maximizar $\text{tasa\_acierto\_ponderada}$ equivale a maximizar $50 \times \text{VP} + \text{VN} = 50 \times \text{P} - 50 \times \text{FP} + \text{N} - \text{FN}$ porque $50 \times \text{P} + \text{N}$ es constante, y por la misma razón es equivalente a minimizar $50 \times \text{FP} + \text{FN}$, que es obviamente lo mismo que minimizar $\text{coste\_total}$.
+
+La métrica $\text{tasa\_acierto\_ponderada}$ tiene la virtud de estar acotada entre 0, que representa que el coste es el máximo posible, y 1, que representa que el coste es el mínimo posible.
+
+TODO: terminar
+
+# Estimación del error
 
 # Valoración de los resultados
 
