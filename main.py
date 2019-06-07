@@ -27,6 +27,9 @@ print("Problema de clasificación APS Failure at Scania Trucks Data Set\n")
 model_names = ("Perceptron", "Neural network",
                                       "AdaBoost", "Random Forest")
 
+model_names_cv = ("Perceptron CV", "Neural Network CV",
+                                      "AdaBoost CV", "Random Forest")                                      
+
 ########################
 #    Score functions
 ########################
@@ -199,7 +202,7 @@ def tuning(ds):
     rf_clf = Pipeline(steps=[
         ('pca', PCA(svd_solver='full')),
         ('poly', PolynomialFeatures(2)),
-        ('rf', RandomForestClassifier(max_features='sqrt', criterion='gini'))
+        ('rf', RandomForestClassifier(max_features='sqrt', criterion='gini', class_weight=ds.WEIGHTS_DIC))
     ])
 
     rf_parameters = {
@@ -224,7 +227,7 @@ def tuning(ds):
     return models
 
 
-def train(ds):
+def train(ds, save_models=True):
     pct_clf = Pipeline(steps=[
         ('pca', PCA(svd_solver='full', n_components=0.95)),
         ('poly', PolynomialFeatures(2)),
@@ -269,7 +272,8 @@ def train(ds):
         ('poly', PolynomialFeatures(2)),
         ('rf', RandomForestClassifier(max_features='sqrt', n_estimators=160,
                                       criterion='gini',
-                                      class_weight=ds.WEIGHTS_DIC))
+                                      class_weight=ds.WEIGHTS_DIC,
+                                      max_depth=10))
     ])
 
     start_time = time.time()
@@ -283,25 +287,52 @@ def train(ds):
         "Random Forest": rf_clf
     }
 
-    for model_name in models:
-        save_model(models[model_name], model_name)
+    if save_model:
+        for model_name in models:
+            save_model(models[model_name], model_name)
 
     return models
 
 
+def truncate_number(number):
+    return int(str(number)[:3])
+
+def print_results_table(train_r, test_r):
+    table =  """
+    +---------------+----------------------+---------------+
+    | Modelo        | Score de entrenamiento | Score de test |
+    +---------------+------------------------+---------------+
+    | Perceptron    |         {train_r[0]}          |   {test_r[0]}       |
+    +---------------+------------------------+---------------+
+    | Red neuronal  |         {train_r[1]}          |   {test_r[1]}       |
+    +---------------+------------------------+---------------+
+    | AdaBoost      |         {train_r[2]}          |   {test_r[2]}       |
+    +---------------+------------------------+---------------+
+    | Random Forest |         {train_r[0]}          |   {test_r[3]}       |
+    +---------------+------------------------+---------------+
+    """
+    print(table)
 
 
-def results(ds):
-    models = load_all_models(model_names)
+def show_results(ds, p_models=None):
+    models = p_models
+    if p_models == None:
+        models = load_all_models(model_names)
+
+    #print_results_table()
+    train_results = []
+    test_results  = []
     for name, model in models.items():
         print(name)
         train_pred = model.predict(ds.train_var)
         train_acc = score_f(ds.train_output, train_pred)
+        train_results.append(truncate_number(train_acc))
         print(f"Score en training: {train_acc}")
 
         # Results in test
         test_pred = model.predict(ds.test_var)
         test_acc = score_f(ds.test_output, test_pred)
+        test_results.append(truncate_number(test_acc))
         print(f"Score en test: {test_acc}")
 
 
@@ -324,11 +355,12 @@ def yes_or_no(question):
 
 def main():
     # Classification data
-    ds = get_aps_dataset(small=True)
+    ds = get_aps_dataset(small=False)
     ds.preprocess()
 
-    #results(ds)
-    #exit()
+    models = train(ds, save_models=True)
+    show_results(ds, models)
+    exit()
 
     do_tuning = yes_or_no("¿Desea hacer la estimación de los hiperparámetros "
                           "para cada modelo? (Puede tardar algunas horas) "

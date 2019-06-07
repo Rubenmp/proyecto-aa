@@ -5,7 +5,6 @@
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
-#import seaborn as sns
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
 from sklearn.ensemble import IsolationForest
@@ -136,7 +135,7 @@ class DataSet:
         # new version, if we do not set these parameters it would
         # be a deprecated version of IsolationForest
         num_var = len(data[0])
-        outliers_IF = IsolationForest(behaviour="new", contamination="auto", n_estimators=num_var)
+        outliers_IF = IsolationForest(behaviour="new", contamination=0.1, n_estimators=num_var)
         data_with_obj_class = data[classes == obj_class]
         outliers_IF.fit(data_with_obj_class)
 
@@ -190,6 +189,7 @@ class DataSet:
 
 
     def plot_boxplot(self, data, index, show_outliers=False, file=None):
+        import seaborn as sns
         sns.boxplot(x=data[index], showfliers=show_outliers)
         plt.title(f'Boxplot de la variable {self.var_names[index]}')
         if file is not None:
