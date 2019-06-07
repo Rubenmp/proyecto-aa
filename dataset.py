@@ -10,7 +10,6 @@ from sklearn.impute import SimpleImputer
 from sklearn.ensemble import IsolationForest
 from sklearn.utils.class_weight import compute_sample_weight
 from sklearn.manifold import TSNE
-from matplotlib.colors import ListedColormap
 import time
 
 class DataSet:
@@ -76,7 +75,7 @@ class DataSet:
         print("--- %s seconds ---" % (time.time() - start_time))
 
         start_time = time.time()
-        self.__remove_outliers()
+        #self.__remove_outliers()
         print("--- %s seconds ---" % (time.time() - start_time))
 
         if normalization:
@@ -110,7 +109,7 @@ class DataSet:
         pos_class_data = DataSet.__remove_outliers_by_class(self.train_var, self.train_output, DataSet.POSITIVE_CLASS)
         pos_classes = [DataSet.POSITIVE_CLASS for _ in pos_class_data]
 
-        data    = np.concatenate((neg_class_data, pos_class_data))
+        data = np.concatenate((neg_class_data, pos_class_data))
         classes = np.concatenate((neg_classes, pos_classes))
 
         # Shuffle data
@@ -135,7 +134,7 @@ class DataSet:
         # new version, if we do not set these parameters it would
         # be a deprecated version of IsolationForest
         num_var = len(data[0])
-        outliers_IF = IsolationForest(behaviour="new", contamination="auto", n_estimators=num_var*5)
+        outliers_IF = IsolationForest(behaviour="new", contamination="auto", n_estimators=num_var*2)
         data_with_obj_class = data[classes == obj_class]
         outliers_IF.fit(data_with_obj_class)
 
