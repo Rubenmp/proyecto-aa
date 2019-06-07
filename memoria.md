@@ -94,7 +94,7 @@ A continuación se visualiza la evolución de la distribución de valores de una
 
 ![](./imgs/boxplot_aa_000_with_outliers.png){ width=50% } ![](./imgs/new_boxplot_aa_000_with_outliers.png){ width=50% }
 
-Cada imagen es un boxplot sin tener en cuenta candidatos a outliers si se usase una técnica univariable, posteriormente se han añadido dichos elementos como rombos.
+Cada imagen es un diagrama de caja sin tener en cuenta candidatos a outliers si se usase una técnica univariable, posteriormente se han añadido dichos elementos como rombos.
 En el primer gráfico se han calculado los candidatos a outliers respecto a una variable, todo esto dentro del conjunto de entrenamiento y con la clase positiva, aplicar detección de outliers sobre el test no tiene sentido.
 En la segunda imagen se han eliminado los outliers usando Isolation Forests.
 Como se puede comprobar este procedimiento no es equivalente a eliminar variable a variable los elementos que puedan ser outliers usando técnicas univariables. Isolation Forest es una técnica multivariable, combina la información obtenida en todas las variables para decidir los outliers.
@@ -118,7 +118,7 @@ Como a priori no sabemos con cuántas variables nos queremos quedar ni si es bue
 
 # Normalización de datos
 
-Solamente viendo los boxplots de las dos primeras variables se aprecia que hay cambios de magnitud en las variables y que sería deseable realizar algún tipo de normalización.
+Solamente viendo los diagramas de caja de las dos primeras variables se aprecia que hay diferencias de magnitud en las variables y que sería deseable realizar algún tipo de normalización.
 
 ![](./imgs/boxplot_aa_000.png){ width=50% } ![](./imgs/boxplot_ab_000.png){ width=50% }
 
@@ -169,24 +169,12 @@ Para estos casos existen técnicas que estiman el error del modelo para una mues
 
 # Definición de los modelos y estimación de parámetros
 
+A continuación se muestra una descripción de los modelos y de sus parámetros más importantes. Para la regularización de los modelos también se hace una estimación de parámetros que se comentará posteriormente.
 
 ## Perceptron
 
 El algoritmo lineal elegido es el Perceptron. El Percetron es un algoritmo que trata de encontrar un separador lineal de los datos partiendo de un vector inicial de pesos y modificándolo iterativamente para corregir los fallos de clasificación. Por sí mismo no tiene parámetros, pero sí debemos elegir el mejor PCA y los parámetros de la regularización.
-
-Para el PCA obtenemos que lo mejor es aplicar una reducción que explique el TODO:XX de la varianza de la muestra original. Además se puede cambiar,
-    
-* Tipo de regularización
-
-    La idea principal de los tres tipos de regularización es sumar un término a la función de coste que se desea minimizar. Esto ayuda a la generalización del modelo, sea $p$ el número de pesos, $\beta_i$ el peso i-ésimo y $\alpha$ un parámetro a determinar, tenemos tres tipos principales de regularización,
-
-    * L1 (Lasso). En este caso se suma $\alpha\sum_{i=0}^p |\beta_i|$
-
-    * L2 (Ridge). Se suma $\alpha\sum_{i=0}^p \beta_i^2$ a la función de coste.
-
-    * Elasticnet. Combinación de las dos técnicas alteriores, suma $\alpha L_1 + (1-\alpha) L2$.
-
-    El parámetro $\alpha$ se estima mediante validación cruzada dentro del rango $[10^{-5}, 10^{-1}]$.
+Para el PCA obtenemos que lo mejor es aplicar una reducción que explique el $80%$ de la varianza de la muestra original. 
 
  
 ## Red neuronal
@@ -212,10 +200,6 @@ Los elementos más relevantes a la hora de definir una red neuronal son los sigu
     * Sigmoide: $f(x)=1/(1+e^{-x})$, es una función no lineal acotada entre $0$ y $1$, existe una generalización para problemas de clasificación múltiple llamada Softmax.
     * Tangente hiperbólica: $f(x) = tanh(x)$, otra función no lineal acotada entre $-1$ y $1$.
     * RELU (Rectifier Linear Unit): $f(x) = \max (0,x)$, al no estar acotada aplica un cambio más agresivo que las dos anteriores con valores altos. Al tener en cuenta solamente los valores positivos puede matar muchas neuronas.
-
-* Alpha
-
-    Parámetro $\alpha$ descrito en el Perceptron, usando regularización L2.
 
 * Ratio de aprendizaje
 
@@ -273,6 +257,28 @@ Los elementos más relevantes a la hora de definir un clasificador random forest
     
 
 # Idoneidad de la regularización
+
+En este apartado se explican los tipos de regularización que se han planteado para cada algoritmo y sus parámetros relevantes.
+
+## Perceptron
+
+* Tipo de regularización
+
+    La idea principal de los tres tipos de regularización es sumar un término a la función de coste que se desea minimizar. Esto ayuda a la generalización del modelo, sea $p$ el número de pesos, $\beta_i$ el peso i-ésimo y $\alpha$ un parámetro a determinar, tenemos tres tipos principales de regularización,
+
+    * L1 (Lasso). En este caso se suma $\alpha\sum_{i=0}^p |\beta_i|$
+
+    * L2 (Ridge). Se suma $\alpha\sum_{i=0}^p \beta_i^2$ a la función de coste.
+
+    * Elasticnet. Combinación de las dos técnicas alteriores, suma $\alpha L_1 + (1-\alpha) L2$.
+
+    El parámetro $\alpha$ se estima mediante validación cruzada dentro del rango $[10^{-5}, 10^{-1}]$.
+
+## Red neuronal
+
+* Alpha
+
+    Parámetro $\alpha$ descrito en el Perceptron, usando regularización L2.
 
 # Valoración de los resultados
 
