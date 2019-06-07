@@ -19,6 +19,7 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
 from sklearn.utils.class_weight import compute_sample_weight
 from sklearn.externals import joblib
+from sklearn.metrics import confusion_matrix
 import time
 
 
@@ -308,7 +309,7 @@ def print_results_table(train_r, test_r):
     +---------------+------------------------+---------------+
     | AdaBoost      |         {train_r[2]}          |   {test_r[2]}       |
     +---------------+------------------------+---------------+
-    | Random Forest |         {train_r[0]}          |   {test_r[3]}       |
+    | Random Forest |         {train_r[3]}          |   {test_r[3]}       |
     +---------------+------------------------+---------------+
     """
     print(table)
