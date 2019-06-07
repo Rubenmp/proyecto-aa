@@ -298,12 +298,9 @@ def train(ds, save_models=True):
     return models
 
 
-def truncate_number(number):
-    return int(str(number)[:3])
-
 
 def print_results_table(train_r, test_r):
-    table =  """
+    table =  f"""
     +---------------+----------------------+---------------+
     | Modelo        | Score de entrenamiento | Score de test |
     +---------------+------------------------+---------------+
@@ -318,31 +315,35 @@ def print_results_table(train_r, test_r):
     """
     print(table)
 
+def show_confusion_matrix():
+    return None
 
 def show_results(ds, p_models=None):
     models = p_models
     if p_models == None:
         models = load_all_models(model_names)
 
-    #print_results_table()
     train_results = []
     test_results  = []
+    confusion_matrix = []
     for name, model in models.items():
         print(name)
         train_pred = model.predict(ds.train_var)
         train_acc = score_f(ds.train_output, train_pred)
-        train_results.append(truncate_number(train_acc))
+        train_results.append(train_acc)
         print(f"Score en training: {train_acc}")
 
         # Results in test
         test_pred = model.predict(ds.test_var)
         test_acc = score_f(ds.test_output, test_pred)
-        test_results.append(truncate_number(test_acc))
+        test_results.append(test_acc)
         print(f"Score en test: {test_acc}")
-
+        """
         # Confusion matrix
-        # tn, fp, fn, tp = confusion_matrix([0, 1, 0, 1], [1, 1, 1, 0]).ravel()
-
+        tn, fp, fn, tp = confusion_matrix(ds.test_output, test_pred).ravel()
+        confusion_matrix.append( (tn, fp, fn, tp) )
+        print(f"Los valores de la matriz de confusión son (true negative, false positive, false negative, true positive): ({tn}, {fp}, {fn}, tp)")
+        """
         print("\n")
 
     print_results_table(train_results, test_results)
@@ -372,7 +373,7 @@ def main():
     ds = get_aps_dataset(small=True)
     ds.preprocess()
 
-    models = train(ds, save_models=False)
+    models = load_all_models(model_names)
     show_results(ds, models)
     exit()
 
