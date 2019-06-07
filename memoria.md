@@ -170,6 +170,42 @@ Una red neuronal consiste en una serie de capas de neuronas, cada una conectada 
 El teorema de aproximación universal afirma que una red neuronal con una capa oculta puede aproximar cualquier función continua con entradas dentro de un determinado rango. 
 En problemas reales puede haber ruido que nos impida una aproximación perfecta, además de otros factores como número de datos insuficiente.
 
+Los elementos más relevantes a la hora de definir una red neuronal son los siguientes:
+
+* Estructura de capas.
+
+    En nuestro problema el número de elementos de la primera capa de entrada viene definido por la dimensionalidad de nuestro problema, por el número de variables que estamos usando. La capa final serán dos elementos, definiendo en cada caso la estimación de la probabilidad de cada salida, positiva o negativa. El número de capas intermedias y de elementos de cada capa no es un parámetro tan fácil de determinar. Por ello se usará una búsqueda paramétrica entre las siguientes distribuciones de capas internas:
+    * $(100,)$: una única capa intermedia con $100$ neuronas.
+    * $(75, 75)$: dos capas intermedias, cada una con $75$ neuronas.
+    * $(20, 20, 20)$: tres capas intermedias, cada una con $20$ neuronas.
+
+* Función de activación.
+
+    En cada perceptrón se aplica una función tras la suma ponderada que nos ayuda a determinar la importancia de dicha neurona en la siguiente capa. La combinación sucesiva de las funciones de activación es lo que otorga la capacidad de aprender funciones no lineales a las redes neuronales. Sin función de activación la salida sería una combinación lineal de las entradas, independientemente del número de capas y su distribución. Las funciones de activación más relevantes que se han considerado son las siguientes:
+    * Sigmoide: $f(x)=1/(1+e^{-x})$, es una función no lineal acotada entre $0$ y $1$, existe una generalización para problemas de clasificación múltiple llamada Softmax.
+    * Tangente hiperbólica: $f(x) = tanh(x)$, otra función no lineal acotada entre $-1$ y $1$.
+    * RELU (Rectifier Linear Unit): $f(x) = \max (0,x)$, al no estar acotada aplica un cambio más agresivo que las dos anteriores con valores altos. Al tener en cuenta solamente los valores positivos puede matar muchas neuronas.
+
+* Alpha
+
+    Es un término de regularización que incentiva que la suma de los cuadrados de los pesos sea pequeña, ayudando a la generalización.
+    TODO: citar
+    https://icml.cc/Conferences/2004/proceedings/papers/354.pdf
+    Esto se consigue sumando a la función de pérdida un término $\alpha\sum_{i=0}^p \beta_i$, en este caso $\alpha$ será el parámetro a buscar, se considerarán
+    * $5$ números entre $10^{-4}$ y $10^{-1}$
+
+* Ratio de aprendizaje
+
+    Nuestra red aprende con una modificación del gradiente descendiente estocástico
+    TODO: citar
+    https://arxiv.org/pdf/1412.6980.pdf
+    Por ello se necesita un término para definir la velocidad del aprendizaje, no siempre aprender más rápido es mejor.
+
+    * Ratio constantemente igual a $0.001$. Es un ratio pequeño que puede hacer que se requieran más iteraciones para aprender, pero al ser un término pequeño reduce la probabilidad de hacer iteraciones que no nos acerquen a mínimos/máximos.
+    * Ratio adaptativo. Al principio del aprendizaje puede ser mejor aprender más rápido y conforme el algoritmo converja reducir dicho ratio para reducir la probabilidad descrita anteriormente.
+
+    
+
 ## Boosting
 Boosting es un algoritmo que permite combinar algoritmos para obtener mejores resultados.
 A cada uno de los algoritmos débiles se le asigna un peso en función de la precisión que tenga, de esta forma mejores algoritmos tendrán más peso en el resultado final, pero no lo determinarán completamente.
