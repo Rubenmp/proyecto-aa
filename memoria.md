@@ -12,7 +12,7 @@ lang: es
 
 \newpage
 
-# Exposición del problema
+# Definición del problema
 
 En este trabajo trataremos el conjunto de datos *APS failure at Scania Trucks*. Este conjunto de datos contiene información sobre el funcionamiento del sistema de presión del aire (*APS*) de camiones Scania, que se encarga de funciones como el frenado. 
 Se recogen 171 variables seleccionadas por expertos en casos de averías y se asigna a cada dato una clase *positiva* (la avería está relacionada con el APS) o *negativa* (la avería no está relacionada con el APS). El conjunto de entrenamiento proporcionado tiene 60000 ejemplos y el de test tiene 16000.
@@ -37,7 +37,13 @@ http://www.jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf
 ![](./imgs/scatter_2d_exact.png){ width=85% }
 
 
-# Preprocesado de datos
+# Codificación de los datos
+
+## Definición de los conjuntos de training y test
+
+Los conjuntos de training y test vienen ya dados. El conjunto de training consta de 60.000 ejemplos, 59.000 de la clase negativa y 1.000 de la clase positiva. El conjunto de test tiene 16.000 ejemplos.
+
+Para la validación dividiremos el conjunto de training en cinco subconjuntos disjuntos, rotando el subconjunto que se usa como validación y usando los otros cuatro como entrenamiento (validación cruzada).
 
 ## Tratamiento de valores desconocidos
 
@@ -94,8 +100,7 @@ Teniendo en cuenta esta aproximación puede aumentar la calidad del conjunto de 
 
 
 
-## Normalización de datos
-
+# Selección de un subconjunto de variables
 
 ## Análisis de componentes principales
 
@@ -109,17 +114,36 @@ En este caso no nos importa esta desventaja ya que las variables iniciales estab
 No existe un porcentaje de varianza perfecto con el que determinar el número de componentes principales con el que debemos quedarnos, por ello se probará con diferentes valores en validación cruzada estratificada.
 
 
-# Selección de clases de funciones
+
+
+# Función de pérdida
+
+## Selección de clases de funciones
 
 TODO: decidir cuáles (comentar que la anonimización de las variables hace que vayamos a ciegas)
 
-# Definición de los conjuntos de training y test
+##  Estimación del error
 
-Los conjuntos de training y test vienen ya dados. El conjunto de training consta de 60.000 ejemplos, 59.000 de la clase negativa y 1.000 de la clase positiva. El conjunto de test tiene 16.000 ejemplos.
+En este problema se especifica que el objetivo es minimizar el coste, definido como
+$$\text{coste\_total} = \text{coste\_1} \times \text{FP} + \text{coste\_2} \times \text{FN} \text{,}$$
 
-Para la validación dividiremos el conjunto de training en cinco subconjuntos disjuntos, rotando el subconjunto que se usa como validación y usando los otros cuatro como entrenamiento (validación cruzada).
+donde $\text{coste\_1} = 10$, $\text{coste\_2} = 500$ y $\text{FP}$ y $\text{FN}$ denotan, respectivamente, el número de datos incorrectamente clasificados por el modelo como positivos y negativos. Es decir, el coste de un falso negativo (no detectar la verdadera causa de la avería) es mucho mayor que el de un falso positivo (arreglar innecesariamente el APS).
 
-# Regularización
+Por tanto, una métrica de la bondad del ajuste tiene que cumplir que su maximización sea equivalente a la minimización de $\text{coste\_total}$. Una posibilidad es usar una tasa de acierto ponderada de la siguiente manera:
+
+$$\text{tasa\_acierto\_ponderada} = \frac{50 \times \text{VP} + \text{VN}}{50 \times \text{P} + \text{N}} \text{,}$$
+
+donde $P$ y $N$ denotan el número de ejemplos datos positivos y negativos y $VP$ y $VN$ representan, respectivamente, el número de datos correctamente clasificados por el modelo como positivos y negativos.
+
+Podemos comprobar que minimizar $\text{coste\_total}$ es equivalente a maximizar $\text{tasa\_acierto\_ponderada}$. En efecto, maximizar $\text{tasa\_acierto\_ponderada}$ equivale a maximizar $50 \times \text{VP} + \text{VN} = 50 \times \text{P} - 50 \times \text{FP} + \text{N} - \text{FN}$ porque $50 \times \text{P} + \text{N}$ es constante, y por la misma razón es equivalente a minimizar $50 \times \text{FP} + \text{FN}$, que es obviamente lo mismo que minimizar $\text{coste\_total}$.
+
+La métrica $\text{tasa\_acierto\_ponderada}$ tiene la virtud de estar acotada entre 0, que representa que el coste es el máximo posible, y 1, que representa que el coste es el mínimo posible.
+
+TODO: terminar
+
+
+# Selección de la técnica paramétrica
+
 
 # Definición de los modelos y estimación de parámetros
 
@@ -161,28 +185,8 @@ Random forest es una mejora sobre los árboles de decisión. Se construyen vario
 Una diferencia con los árboles de decisión es que la clasificación hecha por random forests es difícil de interpretar, pero esto no es un problema en este caso ya que las variables están inicialmente anonimizadas.
 
 
-# Métrica del ajuste
-
-En este problema se especifica que el objetivo es minimizar el coste, definido como
-$$\text{coste\_total} = \text{coste\_1} \times \text{FP} + \text{coste\_2} \times \text{FN} \text{,}$$
-
-donde $\text{coste\_1} = 10$, $\text{coste\_2} = 500$ y $\text{FP}$ y $\text{FN}$ denotan, respectivamente, el número de datos incorrectamente clasificados por el modelo como positivos y negativos. Es decir, el coste de un falso negativo (no detectar la verdadera causa de la avería) es mucho mayor que el de un falso positivo (arreglar innecesariamente el APS).
-
-Por tanto, una métrica de la bondad del ajuste tiene que cumplir que su maximización sea equivalente a la minimización de $\text{coste\_total}$. Una posibilidad es usar una tasa de acierto ponderada de la siguiente manera:
-
-$$\text{tasa\_acierto\_ponderada} = \frac{50 \times \text{VP} + \text{VN}}{50 \times \text{P} + \text{N}} \text{,}$$
-
-donde $P$ y $N$ denotan el número de ejemplos datos positivos y negativos y $VP$ y $VN$ representan, respectivamente, el número de datos correctamente clasificados por el modelo como positivos y negativos.
-
-Podemos comprobar que minimizar $\text{coste\_total}$ es equivalente a maximizar $\text{tasa\_acierto\_ponderada}$. En efecto, maximizar $\text{tasa\_acierto\_ponderada}$ equivale a maximizar $50 \times \text{VP} + \text{VN} = 50 \times \text{P} - 50 \times \text{FP} + \text{N} - \text{FN}$ porque $50 \times \text{P} + \text{N}$ es constante, y por la misma razón es equivalente a minimizar $50 \times \text{FP} + \text{FN}$, que es obviamente lo mismo que minimizar $\text{coste\_total}$.
-
-La métrica $\text{tasa\_acierto\_ponderada}$ tiene la virtud de estar acotada entre 0, que representa que el coste es el máximo posible, y 1, que representa que el coste es el mínimo posible.
-
-TODO: terminar
 
 
-
-
-# Estimación del error
+# Valoración de los resultados
 
 # Justificación de la calidad del modelo
