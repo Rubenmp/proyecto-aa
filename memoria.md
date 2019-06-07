@@ -8,6 +8,7 @@ header-includes : |
     \usepackage{ stmaryrd }
 toc: true
 lang: es
+colorlinks: true
 ---
 
 \newpage
@@ -31,9 +32,7 @@ Trataremos de diseñar un modelo para este problema de cada uno de los siguiente
 * Random forest;
 * AdaBoost.
 
-Tras el tratamiento de los NaN en el preprocesamiento de datos se puede visualizar un subconjunto de los datos tras su proyección a dos dimensiones con la técnica t-distributed Stochastic Neighbor Embedding. t-SNE es un método para visualización, para reducir la dimensionalidad es preferible usar análisis de componentes principales.
-TODO: citar
-http://www.jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf
+Tras el tratamiento de los NaN en el preprocesamiento de datos se puede visualizar un subconjunto de los datos tras su proyección a dos dimensiones con la técnica t-distributed Stochastic Neighbor Embedding. t-SNE es un método para visualización, para reducir la dimensionalidad es preferible usar análisis de componentes principales ([ver enlace](http://www.jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf))
 
 
 ![](./imgs/scatter_2d_exact.png){ width=85% }
@@ -71,20 +70,16 @@ Hay dos tipos principales de análisis de outliers, univariable y multivariable.
 
 Cuando se tratan los outliers en problemas de clasificación hay que tener cuidado, no se deben aplicar directamente las técnicas de detección de outliers sin tener en cuenta la clase de cada elemento.
 Si se hace el tratamiento de outliers ignorando la clase en un conjunto muy desbalanceado se corre el riesgo de que la mayoría de elementos de la clase minoritaria sean clasificados como outliers.
-En nuestro conjunto de entrenamiento si se aplica una detección de outliers sin considerar la clase obtenemos $2785$ outliers (de un total de $60.000$ elementos), $859$ de ellos tienen clase positiva (de un total de 1.000 casos positivos), estaríamos eliminando la mayoría de elementos de la clase positiva.
-Por este motivo es deseable buscar los outliers entre los casos positivos y luego entre los negativos de forma independiente.
 
-TODO: citar justificación separar tratamiento de outliers por clases
-https://idus.us.es/xmlui/bitstream/handle/11441/42708/Deletin%20or%20keeping.pdf?sequence=1&isAllowed=y
+En nuestro conjunto de entrenamiento si se aplica una detección de outliers sin considerar la clase obtenemos $2785$ outliers (de un total de $60.000$ elementos), $859$ de ellos tienen clase positiva (de un total de 1.000 casos positivos), estaríamos eliminando la mayoría de elementos de la clase positiva.
+Por este motivo es deseable buscar los outliers entre los casos positivos y luego entre los negativos de forma independiente ([aquí](https://idus.us.es/xmlui/bitstream/handle/11441/42708/Deletin%20or%20keeping.pdf?sequence=1&isAllowed=y) se argumenta con más detalle)
 
 
 ### Isolation Forest
 El algoritmo usado para la detección de outliers es Isolation Forest, que combina diferentes árboles de decisión de profundidad uno para elegir los outliers. En cada etapa del algoritmo se selecciona una característica al azar y un valor aleatorio entre el mínimo y máximo de dicha característica. Este proceso se repite varias etapas, la idea básica es que los outliers en cada variable tendrán valores atípicos, por ello es más probable que queden a un lado de dicho valor elegido al azar. Este proceso se repite varias veces, la identificación de los outliers se basa en que para identificar a un punto que no lo es se necesitará mayor cantidad de particiones.
 
 
-![](./imgs/isolation_forest.png){ width=85% }
-TODO: citar imagen
-https://cs.nju.edu.cn/zhouzh/zhouzh.files/publication/icdm08b.pdf
+![Fuente [aquí](https://cs.nju.edu.cn/zhouzh/zhouzh.files/publication/icdm08b.pdf)](./imgs/isolation_forest.png){ width=85% }
 
 
 El número de iteraciones es deseable adaptarlo en función del problema, por ejemplo respecto al número de variables del conjunto, usaremos $\{numero de variables\}$ iteraciones para tener un ajuste suficiente para el problema.
@@ -92,7 +87,9 @@ Al tener suficientes datos podemos permitirnos que la muestra aleatoria que se u
 La proporción esperada de outliers está fijada como se especifica en el paper original, alrededor del 10% de los datos.
 A continuación se visualiza la evolución de la distribución de valores de una variable.
 
-![](./imgs/boxplot_aa_000_with_outliers.png){ width=50% } ![](./imgs/new_boxplot_aa_000_with_outliers.png){ width=50% }
+![](./imgs/boxplot_aa_000_with_outliers.png){ width=50% }
+
+![](./imgs/new_boxplot_aa_000_with_outliers.png){ width=50% }
 
 Cada imagen es un diagrama de caja sin tener en cuenta candidatos a outliers si se usase una técnica univariable, posteriormente se han añadido dichos elementos como rombos.
 En el primer gráfico se han calculado los candidatos a outliers respecto a una variable, todo esto dentro del conjunto de entrenamiento y con la clase positiva, aplicar detección de outliers sobre el test no tiene sentido.
@@ -125,15 +122,13 @@ Solamente viendo los diagramas de caja de las dos primeras variables se aprecia 
 Los datos se han normalizado mediante una transformación lineal para que cada variable tenga media nula y desviación estándar 1. El objetivo de esta transformación es que los modelos no estén sesgados hacia dar más peso a determinadas variables. De este modo, dos valores iguales para variables distintas representan valores igual de extremos.
 
 
-# Función de pérdida
-
-## Selección de clases de funciones
+# Selección de clases de funciones
 
 En este problema no tenemos ningún tipo de información acerca del significado de las variables originales, por tanto es imposible saber qué tipo de transformaciones de los datos son *naturales* o razonables.
 
 Se ha aplicado la transformación más simple, una polinómica con grado $2$ y otra con grado $3$. La comparación mediante validación cruzada muestra que los resultados son similares, por ello se elige el menor grado por ser una transformación más simple, ya que es esperable que podrá generalizar mejor.
 
-##  Estimación del error
+#  Estimación del error
 
 En el problema se especifica que el objetivo es minimizar el coste, definido como
 $$\text{coste\_total} = \text{coste\_fp} \times \text{FP} + \text{coste\_fn} \times \text{FN} \text{,}$$
@@ -174,9 +169,9 @@ A continuación se muestra una descripción de los modelos y de sus parámetros 
 ## Perceptron
 
 El algoritmo lineal elegido es el Perceptron. El Percetron es un algoritmo que trata de encontrar un separador lineal de los datos partiendo de un vector inicial de pesos y modificándolo iterativamente para corregir los fallos de clasificación. Por sí mismo no tiene parámetros, pero sí debemos elegir el mejor PCA y los parámetros de la regularización.
-Para el PCA obtenemos que lo mejor es aplicar una reducción que explique el $80%$ de la varianza de la muestra original. 
+Para el PCA obtenemos que lo mejor es aplicar una reducción que explique el $80%$ de la varianza de la muestra original.
 
- 
+
 ## Red neuronal
 
 La combinación de perceptrones permite superar la barrera de los discriminadores lineales.
@@ -191,8 +186,8 @@ Los elementos más relevantes a la hora de definir una red neuronal son los sigu
 
     En nuestro problema el número de elementos de la primera capa de entrada viene definido por la dimensionalidad de nuestro problema, por el número de variables que estamos usando. La capa final serán dos elementos, definiendo en cada caso la estimación de la probabilidad de cada salida, positiva o negativa. El número de capas intermedias y de elementos de cada capa no es un parámetro tan fácil de determinar. Por ello se usará una búsqueda paramétrica entre las siguientes distribuciones de capas internas:
     * $(100,)$: una única capa intermedia con $100$ neuronas.
-    * $(75, 75)$: dos capas intermedias, cada una con $75$ neuronas.
-    * $(20, 20, 20)$: tres capas intermedias, cada una con $20$ neuronas.
+    * $(50, 50)$: dos capas intermedias, cada una con $50$ neuronas.
+    * $(33, 33, 33)$: tres capas intermedias, cada una con $33$ neuronas.
 
 * Función de activación.
 
@@ -203,15 +198,13 @@ Los elementos más relevantes a la hora de definir una red neuronal son los sigu
 
 * Ratio de aprendizaje
 
-    Nuestra red aprende con una modificación del gradiente descendiente estocástico
-    TODO: citar
-    https://arxiv.org/pdf/1412.6980.pdf
+    Nuestra red aprende con una modificación del gradiente descendiente estocástico (ver [enlace](https://arxiv.org/pdf/1412.6980.pdf)).
     Por ello se necesita un término para definir la velocidad del aprendizaje, no siempre aprender más rápido es mejor.
 
     * Ratio constantemente igual a $0.001$. Es un ratio pequeño que puede hacer que se requieran más iteraciones para aprender, pero al ser un término pequeño reduce la probabilidad de hacer iteraciones que no nos acerquen a mínimos/máximos.
     * Ratio adaptativo. Al principio del aprendizaje puede ser mejor aprender más rápido y conforme el algoritmo converja reducir dicho ratio para reducir la probabilidad descrita anteriormente.
 
-    
+
 ## Boosting
 Boosting es un algoritmo que permite combinar algoritmos para obtener mejores resultados.
 A cada uno de los algoritmos débiles se le asigna un peso en función de la precisión que tenga, de esta forma mejores algoritmos tendrán más peso en el resultado final, pero no lo determinarán completamente.
@@ -222,16 +215,13 @@ Una de las críticas principales a este algoritmo es que tiene dificultades para
 
 Los elementos más relevantes a la hora de definir un clasificador AdaBoost son los siguientes:
 
-* Algoritmo 
+* Algoritmo
 
     * SAMME (Stagewise Additive Modeling). Modificación del algoritmo AdaBoost que asigna más peso a los puntos mal clasificados.
 
     * SAMME.R. Variante de SAMME para clasificadores que pueden tener como salida una estimación de las probabilidades. Este algoritmo ajusta los pesos en función de la distancia de dichas probabilidades con el resultado esperado final.
-    
-    SAMME.R es siempre mejor opción que SAMME, por ello se ha elegido como parámetro 
-    TODO: citar
-    https://web.stanford.edu/~hastie/Papers/samme.pdf
 
+    SAMME.R es siempre mejor opción que SAMME, por ello se ha elegido como parámetro ([aquí](https://web.stanford.edu/~hastie/Papers/samme.pdf) se argumenta la razón)
 
 ## Random forest
 Random forest es una mejora sobre los árboles de decisión. Se construyen varios árboles de decisión, cada uno usa un subconjunto aleatorio de las variables explicativas para entrenar un arbol sobre un subconjunto aleatorio de datos. Usar diferentes variables para cada árbol ayuda a que los árboles no estén altamente correlados. Los árboles generados tienen ruido, por ello se hace un promedio de los resultados para elegir la salida final, reduciendo la varianza.
@@ -243,7 +233,7 @@ Los elementos más relevantes a la hora de definir un clasificador random forest
 * Número de árboles
 
     Búsqueda del mejor número de árboles dentro del conjunto
-    
+
     * $\{10, 40, 160\}$
 
 * Conjunto de entrenamiento para cada árbol
@@ -252,20 +242,18 @@ Los elementos más relevantes a la hora de definir un clasificador random forest
 
 * Criterio para medir la calidad de una ramificación
 
-    Elemento necesario a la hora de entrenar un árbol. 
+    Elemento necesario a la hora de entrenar un árbol.
 
     * Gini. Hace un cálculo de las impurezas. Para cada rama se mide como $G=\sum_{i=1}^C p(i)(1-p(i))$, donde $C=2$ es el número de clases y $p(i)$ es la probabilidad de que al escoger un elemento al azar en dicha rama sea de la clase i-ésima. Una ramificación perfecta tendría una impureza Gini cero en ambas ramas. Después se calcula una suma ponderada de dichas impurezas en función de la cantidad de elementos de cada rama.
 
     * Entropía. Criterio para calcula el grado de impredictibilidad de una variable aleatoria. Su fórmula es $Entropy = -\sum_{i=1}^C p(i)\log_2(p(i))$ y se usa para calcular la ganancia de información para cada ramificación, de forma que las mejores ramificaciones se apliquen primero.
 
-    Ambos criterios dan el mismo resultado en la inmensa mayoría de los casos, pero Gini tiene mejor coste computacional, por ello se ha elegido como criterio.
-    TODO: citar
-    https://www.unine.ch/files/live/sites/imi/files/shared/documents/papers/Gini_index_fulltext.pdf
+    Ambos criterios dan el mismo resultado en la inmensa mayoría de los casos, pero Gini tiene mejor coste computacional (ver [enlace](https://www.unine.ch/files/live/sites/imi/files/shared/documents/papers/Gini_index_fulltext.pdf)), por ello se ha elegido como criterio.
 
 * Máximo de variables por árbol
 
     Para generar cada árbol no se eligen todos los predictores ya que si existen predictores muy fuertes entonces los árboles tendrían alta correlación. Se ha usado como valor óptimo la raíz cuadrada del número de variables.
-    
+
 
 # Idoneidad de la regularización
 
@@ -294,9 +282,7 @@ En este apartado se explican los tipos de regularización que se han planteado p
 
 ## Boosting
 
-El ratio de aprendizaje se considera un parámetro de regularización en AdaBoost, ya que permite usar más estimadores base sin causar sobreentrenamiento.
-TODO: citar
-https://pdfs.semanticscholar.org/8055/59b87c0efca148a9ffcd53f5296a51ad3183.pdf
+El ratio de aprendizaje se considera un parámetro de regularización en AdaBoost, ya que permite usar más estimadores base sin causar sobreentrenamiento ([ver enlace](https://pdfs.semanticscholar.org/8055/59b87c0efca148a9ffcd53f5296a51ad3183.pdf)).
 
 En este caso se han comparado los modelos con ratio de aprendizaje en el intervalo $[10^{-2}, 10^2]$.
 
