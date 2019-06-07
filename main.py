@@ -66,6 +66,7 @@ def tune_parameters(classifier, parameters, dataset, scorer, n_iter=10,
     classifier = RandomizedSearchCV(classifier, parameters, n_jobs=-1, cv=3,
                                     scoring=scorer, n_iter=n_iter,
                                     verbose=verbosity)
+
     classifier.fit(dataset.train_var, dataset.train_output)
 
     y_true, y_pred = dataset.test_output, classifier.predict(dataset.test_var)
@@ -88,9 +89,24 @@ def load_model(name):
     return joblib.load(open(model_file(name), 'rb'))
 
 
+def load_all_models(model_names):
+    models = []
+    for name in model_names:
+        models.append(load_model(name))
+
+    return models
+
+
 # Classification data
-ds = get_aps_dataset(small=False)
+ds = get_aps_dataset(small=True)
 ds.preprocess()
+
+"""
+# Lectura de modelos
+model_names = ["Perceptron", "NeuralNet", "AdaBoost", "RandomForest"]
+models = load_all_models(model_names)
+"""
+
 
 
 # Perceptron
@@ -140,6 +156,7 @@ nn_parameters = {
 # save_model(nn_clf, 'NeuralNet')
 # print("--- %s seconds ---" % (time.time() - start_time))
 
+
 # AdaBoost
 
 ab_clf = Pipeline(steps=[
@@ -180,7 +197,7 @@ rf_clf, _ = tune_parameters(rf_clf, rf_parameters, ds, scorer, verbose=True, n_i
 save_model(rf_clf, 'RandomForest')
 
 models = {
-    "SVM": pct_clf,
+    "Perceptron": pct_clf,
     "Neural network": nn_clf,
     "AdaBoost": ab_clf,
     "Random Forest": rf_clf
