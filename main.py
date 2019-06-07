@@ -339,7 +339,12 @@ def show_results(ds, p_models=None):
     
     print_results_table(train_results, test_results)
 
+
 def yes_or_no(question):
+    """
+    (Auxiliary)
+    Function for asking yes/no questions
+    """
     while True:
         ans = input(question)
         if len(ans) > 0:
@@ -350,7 +355,6 @@ def yes_or_no(question):
                 ans = False
                 break
     return ans
-
 
 
 def main():

@@ -294,8 +294,7 @@ http://zpascal.net/cvpr2015/Ren_Global_Refinement_of_2015_CVPR_paper.pdf
 Los parámetros considerados para la regularización son profundidades dentro del conjunto $\{15,25,50\}$ y la validación cruzada estimará el mejor de dichos parámetros.
 
 
-
-# Valoración de los resultados
+# Valoración de los resultados y justificación de la calidad del modelo
 
 +---------------+------------------------+---------------+
 | Modelo        | Score de entrenamiento | Score de test |
@@ -308,5 +307,3 @@ Los parámetros considerados para la regularización son profundidades dentro de
 +---------------+------------------------+---------------+
 | Random Forest |                        |               |
 +---------------+------------------------+---------------+
-
-# Justificación de la calidad del modelo
