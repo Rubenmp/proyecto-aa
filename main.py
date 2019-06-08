@@ -17,8 +17,7 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
-from sklearn.externals import joblib
-from sklearn.metrics import confusion_matrix
+import joblib
 import time
 
 
@@ -335,7 +334,7 @@ def main():
     print("Problema de clasificación APS Failure at Scania Trucks Data Set\n")
 
     # Classification data
-    ds = get_aps_dataset(small=False)
+    ds = get_aps_dataset(small=True)
     ds.preprocess()
 
     do_tuning = yes_or_no("¿Desea hacer la estimación de los hiperparámetros "

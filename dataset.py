@@ -12,6 +12,7 @@ from sklearn.utils.class_weight import compute_sample_weight
 from sklearn.manifold import TSNE
 import time
 
+
 class DataSet:
     POS_CLASS_WEIGHT = 500  # weight of the elements in the positive class
     NEG_CLASS_WEIGHT = 10   # weight of the elements in the negative class
@@ -70,6 +71,8 @@ class DataSet:
 
         if normalization:
             self.__normalize()
+
+        self.__oversampling()
         
 
     def __impute_missing_values(self):
@@ -141,7 +144,7 @@ class DataSet:
         sc.fit(self.train_var)
         self.train_var = sc.transform(self.train_var)
         self.test_var  = sc.transform(self.test_var)
-
+    
 
     def get_sample_weight(self, train=True):
         """
