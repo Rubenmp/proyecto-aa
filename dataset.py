@@ -27,10 +27,8 @@ class DataSet:
         self.train_var, self.train_output = None, None
         self.test_var, self.test_output = None, None
         self.var_names = None
-
-        start_time = time.time()
         self.read_train_test(train_f, test_f)
-        print("--- %s seconds ---" % (time.time() - start_time))
+
 
     def read_train_test(self, train_f, test_f):
         """
@@ -39,10 +37,10 @@ class DataSet:
         self.train_var, self.train_output = self.read_file_data(train_f)
         self.test_var, self.test_output = self.read_file_data(test_f)
 
+
     def read_file_data(self, file):
         """
-            Given a file returns two dataframes, one with its
-            variables and another one with outputs
+            Given a file returns its variables and outputs
         """
         csv_file = open(file, 'r')
         reader = list(csv.reader(csv_file))[20:]
@@ -60,22 +58,15 @@ class DataSet:
 
         return variables, output
 
+
     def preprocess(self, show_evolution=True, normalization=True):
         """
             Preprocessing of training and test data.
         """
         print("Preprocesamiento de datos para clasificación")
 
-        # Impute missing values
-
-        # TODO: si la estrategia de imputación es la de la media, se puede simplemente poner los NaN a 0 tras normalizar
-        start_time = time.time()
         self.__impute_missing_values()
-        print("--- %s seconds ---" % (time.time() - start_time))
-
-        start_time = time.time()
         self.__remove_outliers()
-        print("--- %s seconds ---" % (time.time() - start_time))
 
         if normalization:
             self.__normalize()
@@ -85,11 +76,11 @@ class DataSet:
         """
             Impute missing values
         """
-        # TODO: discutir estrategia de imputación
         imp = SimpleImputer()
         imp.fit(self.train_var)
         self.train_var = imp.transform(self.train_var)
         self.test_var = imp.transform(self.test_var)
+
 
     def __remove_outliers(self):
         """
@@ -116,6 +107,7 @@ class DataSet:
         self.train_var = data[random_indexes]
         self.train_output = classes[random_indexes]
 
+
     @staticmethod
     def __remove_outliers_by_class(data, classes, obj_class):
         """
@@ -139,17 +131,17 @@ class DataSet:
 
         return new_data
 
+
     def __normalize(self):
         """
             Normalize data
         """
-        # TODO: discutir tipo de normalización
-
         # Transform data so that it has mean 0 and s.d. 1
         sc = StandardScaler()
         sc.fit(self.train_var)
         self.train_var = sc.transform(self.train_var)
         self.test_var  = sc.transform(self.test_var)
+
 
     def get_sample_weight(self, train=True):
         """
@@ -161,6 +153,7 @@ class DataSet:
         else:
             return compute_sample_weight(DataSet.WEIGHTS_DIC, self.test_output)
 
+
     def get_sample_weight_train(self):
         """
             Returns the weight of every element in the training dataset
@@ -168,12 +161,14 @@ class DataSet:
         """
         return self.get_sample_weight()
 
+
     def get_sample_weight_test(self):
         """
             Returns the weight of every element in the training dataset
             depending on its class.
         """
         return self.get_sample_weight(train=False)
+
 
     # Plotting functions
     def scatter(self, show=True):
@@ -202,6 +197,7 @@ class DataSet:
             plt.savefig(file)
         plt.show()
 
+
     def nan_histogram(self):
         """
             Shows NaN distribution over variables
@@ -219,8 +215,7 @@ class DataSet:
 
 
 def get_sample_weight(y_true):
-    w_dic = DataSet.WEIGHTS_DIC
-    sample_weight=compute_sample_weight(w_dic, y_true)
+    sample_weight=compute_sample_weight(DataSet.WEIGHTS_DIC, y_true)
     return sample_weight
 
 

@@ -87,9 +87,7 @@ Al tener suficientes datos podemos permitirnos que la muestra aleatoria que se u
 La proporción esperada de outliers está fijada como se especifica en el paper original, alrededor del 10% de los datos.
 A continuación se visualiza la evolución de la distribución de valores de una variable.
 
-![](./imgs/boxplot_aa_000_with_outliers.png){ width=50% }
-
-![](./imgs/new_boxplot_aa_000_with_outliers.png){ width=50% }
+![](./imgs/boxplot_aa_000_with_outliers.png){ width=50% } ![](./imgs/new_boxplot_aa_000_with_outliers.png){ width=50% }
 
 Cada imagen es un diagrama de caja sin tener en cuenta candidatos a outliers si se usase una técnica univariable, posteriormente se han añadido dichos elementos como rombos.
 En el primer gráfico se han calculado los candidatos a outliers respecto a una variable, todo esto dentro del conjunto de entrenamiento y con la clase positiva, aplicar detección de outliers sobre el test no tiene sentido.
@@ -114,10 +112,10 @@ Como a priori no sabemos con cuántas variables nos queremos quedar ni si es bue
 
 Los resultados de la mejor selección de varianza para PCA en cada algoritmo ha sido:
 
-    * Perceptron: $0.95$;
-    * Red neuronal: $0.95$;
-    * Boosting: $0.8$;
-    * Random forest: $0.8$.
+* Perceptron: $0.95$;
+* Red neuronal: $0.95$;
+* Boosting: $0.8$;
+* Random forest: $0.8$.
 
 
 
@@ -320,11 +318,28 @@ Los parámetros considerados para la regularización son profundidades dentro de
 +---------------+------------------------+---------------+
 | Modelo        | Score de entrenamiento | Score de test |
 +---------------+------------------------+---------------+
-| Perceptron    |                        |               |
+| Perceptron    |         0.9340         |   0.9192      |
 +---------------+------------------------+---------------+
-| Red neuronal  |                        |               |
+| Red neuronal  |         0.5379         |   0.5080      |
 +---------------+------------------------+---------------+
-| AdaBoost      |                        |               |
+| AdaBoost      |         0.5379         |   0.5080      |
 +---------------+------------------------+---------------+
-| Random Forest |                        |               |
+| Random Forest |         0.9478         |   0.9358      |
 +---------------+------------------------+---------------+
+
+
+
+Podemos observar que todos los modelos tienen un desempeño similar en el
+entrenamiento y en el test. Esto es indicativo de que no hay overfitting. Los datos
+del Perceptron y el Random Forest muestran que estos modelos se adaptan muy
+bien al problema, ya que se quedan muy cerca del score máximo (1,00) en el test.
+Por otra parte podemos ver que los resultados del modelo de red neuronal
+y de AdaBoost son muy malos: aproximadamente tan buenos como el azar
+(ponderando correctamente las probabilidades de un modelo que asigne clases al
+azar se puede obtener un score de 0,50). No pensemos que se deba a que estos
+modelos no sean adecuados al problema sino a un problema de implementación.
+Estos modelos, a diferencia de los otros dos, no admiten como parámetros los
+pesos de cada clase, y hemos tenido que imitar este efecto con una versión
+modificada del dataset en la que los datos de la clase positiva se copian 50 veces
+(porque tienen 50 veces más peso). Entendemos que la implementación o la idea
+que hemos aplicado son erróneos y esto perjudica al desempeño de los algoritmos.

@@ -49,7 +49,7 @@ model_names = ("Perceptron", "Neural network",
                                       "AdaBoost", "Random Forest")
 
 model_names_cv = ("Perceptron CV", "Neural Network CV",
-                                      "AdaBoost CV", "Random Forest")                                      
+                                      "AdaBoost CV", "Random Forest CV")                                      
 
 ########################
 #    Score functions
@@ -147,12 +147,8 @@ def tuning(ds):
         'pct__alpha': np.logspace(-5, -1, num=5, base=10),
     }
 
-    # Best parameters
-    # {'pct__penalty': 'elasticnet', 'pct__alpha': 0.0001, 'pca__n_components': 0.95}
-    start_time = time.time()
-    #pct_clf = tune_parameters(pct_clf, pct_parameters, ds, scorer,
-    #                          verbose=True, n_iter=30)
-    print("--- %s seconds ---" % (time.time() - start_time))
+    pct_clf = tune_parameters(pct_clf, pct_parameters, ds, scorer,
+                              verbose=True, n_iter=30)
     save_model(pct_clf, 'Perceptron CV')
 
     # Neural network
@@ -170,14 +166,8 @@ def tuning(ds):
         'mlp__learning_rate': ['constant', 'adaptive']
     }
 
-    start_time = time.time()
-    # Best parameters
-    # {'pca__n_components': 0.95, 'mlp__learning_rate': 'constant',
-    # 'mlp__hidden_layer_sizes': (100,), 'mlp__alpha': 0.1, 'mlp__
-    # activation': 'relu'}
-    #nn_clf = tune_parameters(nn_clf, nn_parameters, ds, scorer, verbose=True)
+    nn_clf = tune_parameters(nn_clf, nn_parameters, ds, scorer, verbose=True)
     save_model(nn_clf, 'Neural Network CV')
-    # print("--- %s seconds ---" % (time.time() - start_time))
 
     # AdaBoost
     ab_clf = Pipeline(steps=[
@@ -191,16 +181,10 @@ def tuning(ds):
         'ab__learning_rate': np.logspace(-2, 2, num=5, base=10)
     }
 
-    # # 3x5 = 3566s
-    start_time = time.time()
-    # Best parameters
-    # {'pca__n_components': 0.8, 'ab__learning_rate': 0.1}
-    #ab_clf = tune_parameters(ab_clf, ab_parameters, ds, scorer, verbose=True)
+    ab_clf = tune_parameters(ab_clf, ab_parameters, ds, scorer, verbose=True)
     save_model(ab_clf, 'AdaBoost CV')
-    print("--- %s seconds ---" % (time.time() - start_time))
 
     # Random Forest
-
     rf_clf = Pipeline(steps=[
         ('pca', PCA(svd_solver='full')),
         ('poly', PolynomialFeatures(2)),
@@ -213,12 +197,8 @@ def tuning(ds):
         'rf__max_depth' : [15, 25, 50],
     }
 
-    start_time = time.time()
-    # Best parameters
-    # {'rf__n_estimators': 160, 'rf__criterion': 'gini', 'pca__n_components': 0.8}
     rf_clf = tune_parameters(rf_clf, rf_parameters, ds, scorer, verbose=True, n_iter=12)
     save_model(rf_clf, 'RandomForest CV')
-    print("--- %s seconds ---" % (time.time() - start_time))
 
     models = {
         "Perceptron": pct_clf,
@@ -237,10 +217,7 @@ def train(ds, save_models=True):
         ('pct', Perceptron(penalty='elasticnet', alpha=.0001, max_iter=500,
                            tol=.001, class_weight=ds.WEIGHTS_DIC))
     ])
-
-    start_time = time.time()
-    pct_clf.fit(ds.train_var, ds.train_output)
-    print("--- %s seconds ---" % (time.time() - start_time))
+    pct_clf.fit(ds.train_var, ds.train_output)     
 
     # Some models do not allow fitting with weights,
     # training with weights can be simulated copying 
@@ -255,20 +232,14 @@ def train(ds, save_models=True):
                               hidden_layer_sizes=(100,), alpha=0.1,
                               activation='relu'))
     ])
-
-    start_time = time.time()
     nn_clf.fit(train_var_res, train_output_res)
-    print("--- %s seconds ---" % (time.time() - start_time))
 
     ab_clf = Pipeline(steps=[
         ('pca', PCA(svd_solver='full', n_components=0.8)),
         ('poly', PolynomialFeatures(2)),
         ('ab', AdaBoostClassifier(learning_rate=0.1))
     ])
-
-    start_time = time.time()
     ab_clf.fit(train_var_res, train_output_res)
-    print("--- %s seconds ---" % (time.time() - start_time))
 
     rf_clf = Pipeline(steps=[
         ('pca', PCA(svd_solver='full', n_components=0.8)),
@@ -277,12 +248,8 @@ def train(ds, save_models=True):
                                       criterion='gini',
                                       class_weight=ds.WEIGHTS_DIC,
                                       max_depth=25))
-
     ])
-
-    start_time = time.time()
     rf_clf.fit(ds.train_var, ds.train_output)
-    print("--- %s seconds ---" % (time.time() - start_time))
 
     models = {
         "Perceptron": pct_clf,
@@ -298,25 +265,30 @@ def train(ds, save_models=True):
     return models
 
 
+########################
+#  Results
+########################
+
+def truncate_decimals(number):
+    return format(number, '.4f')
+
 
 def print_results_table(train_r, test_r):
     table =  f"""
-    +---------------+----------------------+---------------+
+    +---------------+------------------------+---------------+
     | Modelo        | Score de entrenamiento | Score de test |
     +---------------+------------------------+---------------+
-    | Perceptron    |         {train_r[0]}          |   {test_r[0]}       |
+    | Perceptron    |         {train_r[0]}         |   {test_r[0]}      |
     +---------------+------------------------+---------------+
-    | Red neuronal  |         {train_r[1]}          |   {test_r[1]}       |
+    | Red neuronal  |         {train_r[1]}         |   {test_r[1]}      |
     +---------------+------------------------+---------------+
-    | AdaBoost      |         {train_r[2]}          |   {test_r[2]}       |
+    | AdaBoost      |         {train_r[2]}         |   {test_r[2]}      |
     +---------------+------------------------+---------------+
-    | Random Forest |         {train_r[3]}          |   {test_r[3]}       |
+    | Random Forest |         {train_r[3]}         |   {test_r[3]}      |
     +---------------+------------------------+---------------+
     """
     print(table)
 
-def show_confusion_matrix():
-    return None
 
 def show_results(ds, p_models=None):
     models = p_models
@@ -325,21 +297,21 @@ def show_results(ds, p_models=None):
 
     train_results = []
     test_results  = []
-    confusion_matrix = []
     for name, model in models.items():
         print(name)
         train_pred = model.predict(ds.train_var)
         train_acc = score_f(ds.train_output, train_pred)
-        train_results.append(train_acc)
+        train_results.append(truncate_decimals(train_acc))
         print(f"Score en training: {train_acc}")
 
         # Results in test
         test_pred = model.predict(ds.test_var)
         test_acc = score_f(ds.test_output, test_pred)
-        test_results.append(test_acc)
+        test_results.append(truncate_decimals(test_acc))
         print(f"Score en test: {test_acc}")
-        
         print("\n")
+
+    print_results_table(train_results, test_results)
 
 
 def yes_or_no(question):
@@ -365,6 +337,11 @@ def main():
     # Classification data
     ds = get_aps_dataset(small=True)
     ds.preprocess()
+
+    models = load_all_models(model_names)
+    #models = train(ds)
+    show_results(ds, models)
+    exit()
 
     do_tuning = yes_or_no("¿Desea hacer la estimación de los hiperparámetros "
                           "para cada modelo? (Puede tardar algunas horas) "
