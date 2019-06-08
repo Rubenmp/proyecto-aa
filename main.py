@@ -335,13 +335,8 @@ def main():
     print("Problema de clasificación APS Failure at Scania Trucks Data Set\n")
 
     # Classification data
-    ds = get_aps_dataset(small=True)
+    ds = get_aps_dataset(small=False)
     ds.preprocess()
-
-    models = load_all_models(model_names)
-    #models = train(ds)
-    show_results(ds, models)
-    exit()
 
     do_tuning = yes_or_no("¿Desea hacer la estimación de los hiperparámetros "
                           "para cada modelo? (Puede tardar algunas horas) "
