@@ -70,10 +70,7 @@ class DataSet:
         self.__remove_outliers()
 
         if normalization:
-            self.__normalize()
-
-        self.__oversampling()
-        
+            self.__normalize()        
 
     def __impute_missing_values(self):
         """
